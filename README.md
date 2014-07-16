@@ -40,6 +40,17 @@ We'll be learning from these codebases to find non-obvious edge cases that need 
   * Alert email - When funds in APIs are running low, alert this address.
   * Price Premium - Percent premium to sell over the remote buy order. (default: 1.05, or 5%)
   * Remote order aggregation - There will need to be some aggregation of orders on the remote exchange when placed on Bitme since Bitme currently has a minimum order size of 10,000 USD
-  * Stateless: The bot will attempt to be as stateless as possible, by loading all needed info from the APIs on start. Only thing that will need to be retained is mid-transaction transfers, which will be done with SQLite (safe for single-process usage).
+  * Stateless
+
+    The bot will attempt to be as stateless as possible, by loading all needed
+    info from the APIs on start. Only thing that will need to be retained is
+    mid-transaction transfers, which will be done with SQLite (safe for
+    single-process usage).
+
+    Edit: Not sure this will be possible. We won't be able to differentiate
+    between our sync'd orders on Bitme vs somebody else's. We'll need to keep
+    tracl of all orders we've placed on Bitme, as well as their state (whether
+    we've begun fulfilling them).
+
 * Good test coverage of core trading logic.
 * Good documentation, for both code and accompanying instructions.
