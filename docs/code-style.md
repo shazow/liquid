@@ -31,8 +31,10 @@ stick with it.
 * Preferred tools:
   * Async: async
   * Command-line flag parsing: commander?
-  * Database/state: (sqlite?)
+  * Database/state: (sqlite3?) sequelize?
   * Email: ?
   * Logging: bole?
   * Testing: Mocha
   * Websockets: socket.io? (Lots of options, not clear which is best atm.)
+
+* 'use strict';?

@@ -48,10 +48,5 @@ We'll be learning from these codebases to find non-obvious edge cases that need 
     mid-transaction transfers, which will be done with SQLite (safe for
     single-process usage).
 
-    Edit: Not sure this will be possible. We won't be able to differentiate
-    between our sync'd orders on Bitme vs somebody else's. We'll need to keep
-    tracl of all orders we've placed on Bitme, as well as their state (whether
-    we've begun fulfilling them).
-
 * Good test coverage of core trading logic.
 * Good documentation, for both code and accompanying instructions.
