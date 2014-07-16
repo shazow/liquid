@@ -21,10 +21,11 @@ We'll be learning from these codebases to find non-obvious edge cases that need 
 
 ### API risks
 
-* Bitme API
+* [Bitme API](https://bitme.github.io/)
   * No streaming API, will need to poll.
   * ?
-* Bitstamp API
+* [Bitstamp API](https://www.bitstamp.net/api/) 
+  * Will be using the [streaming API](https://www.bitstamp.net/websocket/) to sync the latest orders, but do we need a full or partial fallback with polling?
   * ?
 
 
