@@ -1,0 +1,11 @@
+#!/usr/bin/env node
+
+var pkg = require('./package.json'),
+    program = require('commander');
+
+// TODO: Do we want to use something like https://github.com/flatiron/nconf instead?
+program
+    .version(pkg.version)
+    .option('--pretend', 'Do not make real bids, only pretend.')
+    .option('--premium <multiplier>', 'Multiplier to apply over remote exchange prices. (Default: 1.05)')
+    .parse(process.argv);
