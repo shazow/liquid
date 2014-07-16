@@ -36,7 +36,9 @@ We'll be learning from these codebases to find non-obvious edge cases that need 
 * One currency (USD).
 * Configurable features:
   * Bitme and Bitstamp API keys
-  * Order book depth - Number of entries to keep in-sync with the remote exchange.(default: N entries? N volume? % deviation?) A combination of N volume and % deviation from the market rate/last trade sounds like a good way to do it to make sure there is plenty of liquidity.
+  * ~Order book depth~ - Number of entries to keep in-sync with the remote exchange.(default: N entries? N volume? % deviation?) A combination of N volume and % deviation from the market rate/last trade sounds like a good way to do it to make sure there is plenty of liquidity.
+    Bitstamp Streaming API limits you to top 20 bids/asks anyways. We'll take
+    what we can get.
   * Pretend mode - Don't actually trade, just print out debugging logs pretending to trade.
   * Alert email - When funds in APIs are running low, alert this address.
   * Price Premium - Percent premium to sell over the remote buy order. (default: 1.05, or 5%)
