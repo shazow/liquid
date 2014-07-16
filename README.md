@@ -16,6 +16,7 @@ We'll be learning from these codebases to find non-obvious edge cases that need 
 * https://github.com/skier31415/BTC-Arby (Python)
 * https://code.google.com/p/ga-bitbot/source/browse (Python)
 * https://github.com/rokj/bitcoin_dealer (Python)
+* https://github.com/mathisonian/benjamin (Node.js)
 * Others?
 
 
