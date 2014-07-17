@@ -6,6 +6,34 @@ exchange orders, with an added premium. The bot will poll the Bitme order book
 to track completed orders. Once a Bitme completed order is noticed, then it will
 place a corresponding (sans-premium) order on the remote exchange.
 
+
+## Quickstart
+
+Run the tests:
+
+```
+$ npm test
+...
+
+1 passing (10ms)
+```
+
+
+Use the tool:
+
+```
+$ ./liquid --help
+
+  Usage: liquid [options]
+
+  Options:
+
+    -h, --help              output usage information
+    -V, --version           output the version number
+    ...
+```
+
+
 ## Research
 
 ### Codebases to consider
