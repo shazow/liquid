@@ -25,3 +25,17 @@ Monitoring trades:
 
 * Filled scenario: Order bot placed on Bitme disappears
   -> Initiate corresponding order on Bitstamp.
+
+
+## Stateless/testable logic
+
+* Given an order book, return list of corresponding recommended orders.
+
+* Given bot state (set of our pending orders) and Bitme state (order book),
+  return order instructions.
+
+* (Realtime, Websocket) Given bot state for Bitme orders and Bitstamp state (partial order book),
+  return comprehensive revised Bitme orders.
+
+* (Infrequent, REST) Given bot state for Bitstamp orders and Bitstamp state (complete order book),
+  return any completed or partially-completed orders.
