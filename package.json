@@ -8,9 +8,12 @@
     "bitme": "^0.0.10",
     "bitstamp-request": "^0.1.2",
     "bitstamp-ws": "^0.0.2",
-    "commander": "^2.3.0",
+    "commander": "^2.3.0"
   },
   "devDependencies": {
     "mocha": "^1.20.0"
+  },
+  "scripts": {
+    "test": "mocha -R spec ./test"
   }
 }

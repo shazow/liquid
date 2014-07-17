@@ -36,6 +36,5 @@ stick with it.
   * Email: ?
   * Logging: bole?
   * Testing: Mocha
-  * Websockets: socket.io? (Lots of options, not clear which is best atm.)
 
 * 'use strict';?
