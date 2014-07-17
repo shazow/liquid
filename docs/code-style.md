@@ -6,7 +6,7 @@ Node.js has several conflicting Best Practices, so we're going to pick one and
 stick with it.
 
 
-* Indent: 2 spaces.
+* Indent: 4 spaces.
 
 * Semicolons: Always.
 
@@ -30,6 +30,7 @@ stick with it.
 
 * Preferred tools:
   * Async: async
+  * APIs: bitstamp-request, bitstamp-ws, bitme
   * Command-line flag parsing: commander?
   * Database/state: (sqlite3?) sequelize?
   * Email: ?
