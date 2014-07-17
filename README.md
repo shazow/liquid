@@ -84,3 +84,5 @@ We'll be learning from these codebases to find non-obvious edge cases that need 
 
 * Good test coverage of core trading logic.
 * Good documentation, for both code and accompanying instructions.
+
+* TODO: Handle partial order completions.
