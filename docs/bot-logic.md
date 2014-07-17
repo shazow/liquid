@@ -33,6 +33,13 @@ Monitoring trades:
 
 * Given bot state (set of our pending orders) and Bitme state (order book),
   return order instructions.
+  * If a bid is placed by a customer that matches an ask on Bitme, Bitme will
+    resolve this order, causing it to disappear from Bitme's order book. The
+    bot notices the missing orders (exists in state but missing in order book),
+    and places the inverse order + premium on the order's source exchange. This
+    last step is _only_ done if the order source is _not_ Bitme.
+  * If an order appears in the order book that doesn't exist in the bot state,
+    initiate orders to make the bot state match the order book.
 
 * (Realtime, Websocket) Given bot state for Bitme orders and Bitstamp state (partial order book),
   return comprehensive revised Bitme orders.
