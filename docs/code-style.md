@@ -8,6 +8,8 @@ stick with it.
 
 * Indent: 4 spaces.
 
+* Single quotes for strings.
+
 * Semicolons: Always.
 
 * Naming: camelCase by default. TitleCase for classes.

@@ -8,8 +8,16 @@ describe('Dummy Exchange', function() {
     it('should start empty', function() {
         var orders = exchange.getOrders();
         assert.deepEqual(orders, {
-            "bids": [],
-            "asks": []
+            'bids': [],
+            'asks': []
+        });
+    });
+
+    it('should start empty', function() {
+        var orders = exchange.getOrders();
+        assert.deepEqual(orders, {
+            'bids': [],
+            'asks': []
         });
     });
 });
