@@ -42,7 +42,7 @@ Monitoring trades:
     initiate orders to make the bot state match the order book.
 
 * (Realtime, Websocket) Given bot state for Bitme orders and Bitstamp state (partial order book),
-  return comprehensive revised Bitme orders.
+  return the delta of revised Bitme orders.
 
 * (Infrequent, REST) Given bot state for Bitstamp orders and Bitstamp state (complete order book),
   return any completed or partially-completed orders.
