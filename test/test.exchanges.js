@@ -1,5 +1,6 @@
 var assert = require('assert'),
     DummyExchange = require('../lib/exchanges/dummy.js').DummyExchange;
+    Order = require('../lib/order.js').Order;
 
 
 describe('Dummy Exchange', function() {
@@ -15,15 +16,15 @@ describe('Dummy Exchange', function() {
 
     it('should replace all orders', function() {
         var startOrders = {
-            'bids': ['foo'],
-            'asks': ['bar', 'baz']
+            'bids': [new Order('foo', 'BID', 1, 1)],
+            'asks': [new Order('bar', 'BID', 1, 1), new Order('baz', 'BID', 1, 1)]
         };
         exchange.replaceOrders(startOrders);
         assert.deepEqual(exchange.getOrders(), startOrders);
 
         var newOrders = {
-            'bids': ['baz', 'etc'],
-            'asks': ['quux']
+            'bids': [new Order('baz', 'BID', 1, 1), new Order('etc', 'BID', 1, 1)],
+            'asks': [new Order('quux', 'BID', 1, 1)]
         };
         exchange.replaceOrders(newOrders);
         assert.deepEqual(exchange.getOrders(), newOrders);
