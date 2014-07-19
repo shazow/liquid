@@ -1,11 +1,55 @@
 #!/usr/bin/env node
 
 var pkg = require('./package.json'),
-    program = require('commander');
+    program = require('commander'),
+    Bot = require('./lib/bot.js').Bot;
+    logger = require('./lib/logger.js');
 
-// TODO: Do we want to use something like https://github.com/flatiron/nconf instead?
+
+// Inject API keys from environment variables.
+program.api_keys = {
+    'BITSTAMP_CLIENT_ID': process.env.BITSTAMP_CLIENT_ID,
+    'BITSTAMP_KEY': process.env.BITSTAMP_KEY,
+    'BITSTAMP_SECRET': process.env.BITSTAMP_SECRET,
+    'BITME_KEY': process.env.BITME_KEY,
+    'BITME_SECRET': process.env.BITME_SECRET
+}
+
+
+// Setup command line argument parsing and help.
+var countVerbose = function(_, total) { return total + 1; }
+
 program
     .version(pkg.version)
     .option('--pretend', 'Do not make real bids, only pretend.')
-    .option('--premium <multiplier>', 'Multiplier to apply over remote exchange prices. (Default: 1.05)')
-    .parse(process.argv);
+    .option('--premium <multiplier>', 'Multiplier to apply over remote exchange prices. [1.05]', parseFloat)
+    .option('-v, --verbose', 'Increase logging verbosity.', countVerbose, 0);
+
+program.on('--help', function(){
+    // Print API key instructions
+    console.log('  API keys loaded from environment variables:\n');
+
+    for (var key in program.api_keys) {
+        var bullet = program.api_keys[key] ? '✓' : '✖';
+        console.log('    ' + bullet + ' ' + key);
+    }
+
+    console.log('');
+});
+
+program.parse(process.argv);
+
+
+// Determine logger verbosity.
+var level = 'warn';
+if (program.verbose == 1) {
+    level = 'info';
+} else if (program.verbose >= 2) {
+    level = 'debug';
+}
+logger.level = level;
+
+
+// Start the bot.
+var bot = new Bot(program);
+bot.start();
