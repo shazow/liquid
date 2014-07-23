@@ -123,7 +123,7 @@ describe('Trade Logic', function() {
 
     });
 
-    describe('Instruct Bitme Orders', function() {
+    describe('Instruct Origin Orders', function() {
         // TODO: move this over to the dummy exchange once that is implemented
         // XXX: ensure that we filter by order source once that is implemented
         var orderBook = {
@@ -152,7 +152,7 @@ describe('Trade Logic', function() {
                 ]
             };
 
-            var newOrders = TradeLogic.instructBitmeOrders(state, orderBook, 2.0);
+            var newOrders = TradeLogic.instructOriginOrders(state, orderBook, 2.0);
 
             assert.deepEqual(newOrders, []);
         });
@@ -167,12 +167,12 @@ describe('Trade Logic', function() {
                 ]
             };
 
-            var newOrders = TradeLogic.instructBitmeOrders(state, orderBook, 2.0);
+            var newOrders = TradeLogic.instructOriginOrders(state, orderBook, 2.0);
 
             assert.deepEqual(newOrders, []);
         });
 
-        it('should instruct one new ASK order to correspond to a matched BUY order on Bitme', function() {
+        it('should instruct one new ASK order to correspond to a matched BUY order on Origin', function() {
             var state = {
                 'bids': [
                     new Order('1a2b3c', 'BID', '0.123', '455'),
@@ -184,14 +184,14 @@ describe('Trade Logic', function() {
                 ]
             };
 
-            var newOrders = TradeLogic.instructBitmeOrders(state, orderBook, 2.0);
+            var newOrders = TradeLogic.instructOriginOrders(state, orderBook, 2.0);
 
             assert.deepEqual(newOrders, [
                 new Order('1a2b3f', 'ASK', '0.123', '844')
             ]);
         });
 
-        it('should instruct one new BID order to correspond to a matched ASK order on Bitme', function() {
+        it('should instruct one new BID order to correspond to a matched ASK order on Origin', function() {
             var state = {
                 'bids': [
                     new Order('1a2b3c', 'BID', '0.123', '455')
@@ -203,7 +203,7 @@ describe('Trade Logic', function() {
                 ]
             };
 
-            var newOrders = TradeLogic.instructBitmeOrders(state, orderBook, 2.0);
+            var newOrders = TradeLogic.instructOriginOrders(state, orderBook, 2.0);
 
             assert.deepEqual(newOrders, [
                 new Order('1a2b3f', 'BID', '0.123', '211')
@@ -223,7 +223,7 @@ describe('Trade Logic', function() {
                 ]
             };
 
-            var newOrders = TradeLogic.instructBitmeOrders(state, orderBook);
+            var newOrders = TradeLogic.instructOriginOrders(state, orderBook);
 
             assert.deepEqual(newOrders, [
                 new Order('1a2b3f', 'ASK', '0.123', '422'),
