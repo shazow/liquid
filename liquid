@@ -16,9 +16,6 @@ program.api_keys = {
 }
 
 
-// Setup command line argument parsing and help.
-var countVerbose = function(_, total) { return total + 1; };
-
 var printApiKeys = function() {
     // Print API key instructions
     console.log('  API keys loaded from environment variables:\n');
@@ -35,20 +32,19 @@ program
     .version(pkg.version)
     .option('--live', 'Make real trades with real APIs.')
     .option('--premium <multiplier>', 'Multiplier to apply over remote exchange prices. [1.05]', parseFloat)
-    .option('-v, --verbose', 'Increase logging verbosity.', countVerbose, 0)
+    .option('-v, --verbosity [level]', 'Set logging level verbosity (warn, info, debug). [warn]')
     .on('--help', printApiKeys);
 
 program.parse(process.argv);
 
 
 // Determine logger verbosity.
-var level = 'warn';
-if (program.verbose == 1) {
+var level = program.verbosity;
+if (level === true) {
     level = 'info';
-} else if (program.verbose >= 2) {
-    level = 'debug';
 }
 logger.level = level;
+logger.debug("Set debug level: %j", level);
 
 
 // Start the bot.
@@ -56,6 +52,7 @@ try {
     var bot = new Bot(program);
 } catch (e) {
     logger.error('Failed to create bot, aborting: ' + e.message);
+    console.log('');
     printApiKeys();
     process.exit(code=1);
 }
