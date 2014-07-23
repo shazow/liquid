@@ -122,4 +122,113 @@ describe('Trade Logic', function() {
         });
 
     });
+
+    describe('Instruct Bitme Orders', function() {
+        // TODO: move this over to the dummy exchange once that is implemented
+        // XXX: ensure that we filter by order source once that is implemented
+        var orderBook = {
+            'ordersById': {},
+            'bids': [
+                new Order('1a2b3c', 'BID', '0.123', '227.5')
+            ],
+            'asks': [
+                new Order('1a2b3d', 'ASK', '0.123', '912'),
+                new Order('1a2b3e', 'ASK', '0.123', '914')
+            ]
+        };
+        var orders = orderBook.bids.concat(orderBook.asks);
+        orders.forEach(function(order) {
+            orderBook.ordersById[order.id] = order;
+        });
+
+        it('should instruct NO new orders due to identical order book and state', function() {
+            var state = {
+                'bids': [
+                    new Order('1a2b3c', 'BID', '0.123', '455')
+                ],
+                'asks': [
+                    new Order('1a2b3d', 'ASK', '0.123', '456'),
+                    new Order('1a2b3e', 'ASK', '0.123', '457')
+                ]
+            };
+
+            var newOrders = TradeLogic.instructBitmeOrders(state, orderBook, 2.0);
+
+            assert.deepEqual(newOrders, []);
+        });
+
+        it('should instruct NO new orders due to missing order in state', function() {
+            var state = {
+                'bids': [
+                    new Order('1a2b3c', 'BID', '0.123', '455')
+                ],
+                'asks': [
+                    new Order('1a2b3e', 'ASK', '0.123', '457')
+                ]
+            };
+
+            var newOrders = TradeLogic.instructBitmeOrders(state, orderBook, 2.0);
+
+            assert.deepEqual(newOrders, []);
+        });
+
+        it('should instruct one new ASK order to correspond to a matched BUY order on Bitme', function() {
+            var state = {
+                'bids': [
+                    new Order('1a2b3c', 'BID', '0.123', '455'),
+                    new Order('1a2b3f', 'BID', '0.123', '422')
+                ],
+                'asks': [
+                    new Order('1a2b3d', 'ASK', '0.123', '456'),
+                    new Order('1a2b3e', 'ASK', '0.123', '457')
+                ]
+            };
+
+            var newOrders = TradeLogic.instructBitmeOrders(state, orderBook, 2.0);
+
+            assert.deepEqual(newOrders, [
+                new Order('1a2b3f', 'ASK', '0.123', '844')
+            ]);
+        });
+
+        it('should instruct one new BID order to correspond to a matched ASK order on Bitme', function() {
+            var state = {
+                'bids': [
+                    new Order('1a2b3c', 'BID', '0.123', '455')
+                ],
+                'asks': [
+                    new Order('1a2b3d', 'ASK', '0.123', '456'),
+                    new Order('1a2b3e', 'ASK', '0.123', '457'),
+                    new Order('1a2b3f', 'ASK', '0.123', '422')
+                ]
+            };
+
+            var newOrders = TradeLogic.instructBitmeOrders(state, orderBook, 2.0);
+
+            assert.deepEqual(newOrders, [
+                new Order('1a2b3f', 'BID', '0.123', '211')
+            ]);
+        });
+
+        it('should instruct a new BID and ASK at identical rates', function() {
+            var state = {
+                'bids': [
+                    new Order('1a2b3c', 'BID', '0.123', '455'),
+                    new Order('1a2b3f', 'BID', '0.123', '422')
+                ],
+                'asks': [
+                    new Order('1a2b3d', 'ASK', '0.123', '456'),
+                    new Order('1a2b3e', 'ASK', '0.123', '457'),
+                    new Order('1a2b4a', 'ASK', '0.123', '422')
+                ]
+            };
+
+            var newOrders = TradeLogic.instructBitmeOrders(state, orderBook);
+
+            assert.deepEqual(newOrders, [
+                new Order('1a2b3f', 'ASK', '0.123', '422'),
+                new Order('1a2b4a', 'BID', '0.123', '422')
+            ]);
+        });
+    });
 });
