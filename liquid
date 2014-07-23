@@ -21,7 +21,7 @@ var countVerbose = function(_, total) { return total + 1; }
 
 program
     .version(pkg.version)
-    .option('--pretend', 'Do not make real bids, only pretend.')
+    .option('--live', 'Make real trades with real APIs.')
     .option('--premium <multiplier>', 'Multiplier to apply over remote exchange prices. [1.05]', parseFloat)
     .option('-v, --verbose', 'Increase logging verbosity.', countVerbose, 0);
 
@@ -51,5 +51,11 @@ logger.level = level;
 
 
 // Start the bot.
-var bot = new Bot(program);
+try {
+    var bot = new Bot(program);
+} catch (e) {
+    logger.error('Failed to create bot, aborting: ' + e.message);
+    process.exit(code=1);
+}
+
 bot.start();
