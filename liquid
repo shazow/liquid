@@ -17,15 +17,9 @@ program.api_keys = {
 
 
 // Setup command line argument parsing and help.
-var countVerbose = function(_, total) { return total + 1; }
+var countVerbose = function(_, total) { return total + 1; };
 
-program
-    .version(pkg.version)
-    .option('--live', 'Make real trades with real APIs.')
-    .option('--premium <multiplier>', 'Multiplier to apply over remote exchange prices. [1.05]', parseFloat)
-    .option('-v, --verbose', 'Increase logging verbosity.', countVerbose, 0);
-
-program.on('--help', function(){
+var printApiKeys = function() {
     // Print API key instructions
     console.log('  API keys loaded from environment variables:\n');
 
@@ -35,7 +29,14 @@ program.on('--help', function(){
     }
 
     console.log('');
-});
+};
+
+program
+    .version(pkg.version)
+    .option('--live', 'Make real trades with real APIs.')
+    .option('--premium <multiplier>', 'Multiplier to apply over remote exchange prices. [1.05]', parseFloat)
+    .option('-v, --verbose', 'Increase logging verbosity.', countVerbose, 0)
+    .on('--help', printApiKeys);
 
 program.parse(process.argv);
 
@@ -55,6 +56,7 @@ try {
     var bot = new Bot(program);
 } catch (e) {
     logger.error('Failed to create bot, aborting: ' + e.message);
+    printApiKeys();
     process.exit(code=1);
 }
 
