@@ -43,6 +43,8 @@ program.parse(process.argv);
 var level = program.verbosity;
 if (level === true) {
     level = 'debug';
+} else if (level === undefined) {
+    level = 'info';
 }
 logger.level = level;
 logger.debug("Set debug level: %j", level);
