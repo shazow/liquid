@@ -8,8 +8,9 @@
     "bignumber.js": "^1.4.1",
     "bitme": "^0.0.10",
     "bitstamp-request": "^0.1.2",
-    "bitstamp-ws": "^0.0.2",
     "commander": "^2.3.0",
+    "pusher-client": "^0.2.2",
+    "pusher-node-client": "0.0.8",
     "sequelize": "^1.7.9",
     "sqlite3": "^2.2.4",
     "winston": "^0.7.3"

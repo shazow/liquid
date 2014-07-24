@@ -30,9 +30,10 @@ var printApiKeys = function() {
 
 program
     .version(pkg.version)
-    .option('--live', 'Make real trades with real APIs.')
+    .option('--live', 'Use real APIs (instead of DummyExchanges).')
+    .option('--pretend', 'Don\'t send trades, only print them.')
     .option('--premium <multiplier>', 'Multiplier to apply over remote exchange prices. [1.05]', parseFloat)
-    .option('-v, --verbosity [level]', 'Set logging level verbosity (warn, info, debug). [warn]')
+    .option('-v, --verbosity [level]', 'Set logging level verbosity (warn, info, debug). [info]')
     .on('--help', printApiKeys);
 
 program.parse(process.argv);
@@ -41,21 +42,14 @@ program.parse(process.argv);
 // Determine logger verbosity.
 var level = program.verbosity;
 if (level === true) {
-    level = 'info';
+    level = 'debug';
 }
 logger.level = level;
 logger.debug("Set debug level: %j", level);
 
 
 // Prepare the bot.
-try {
-    var bot = Bot.fromConfig(program);
-} catch (e) {
-    logger.error('Failed to create bot, aborting: ' + e.message);
-    console.log('');
-    printApiKeys();
-    process.exit(code=1);
-}
+var bot = Bot.fromConfig(program);
 
 // Register signal handlers for graceful shutdown.
 var gracefulShutdown = function() {
