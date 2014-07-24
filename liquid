@@ -57,4 +57,10 @@ try {
     process.exit(code=1);
 }
 
+var gracefulShutdown = function() {
+    logger.warn('Shutdown signal caught. Attempting to stop gracefully...');
+    bot.stop();
+};
+process.on('SIGINT', gracefulShutdown);
+
 bot.start();
