@@ -47,9 +47,9 @@ logger.level = level;
 logger.debug("Set debug level: %j", level);
 
 
-// Start the bot.
+// Prepare the bot.
 try {
-    var bot = new Bot(program);
+    var bot = Bot.fromConfig(program);
 } catch (e) {
     logger.error('Failed to create bot, aborting: ' + e.message);
     console.log('');
@@ -57,10 +57,13 @@ try {
     process.exit(code=1);
 }
 
+// Register signal handlers for graceful shutdown.
 var gracefulShutdown = function() {
     logger.warn('Shutdown signal caught. Attempting to stop gracefully...');
     bot.stop();
 };
 process.on('SIGINT', gracefulShutdown);
 
+
+// Start trading.
 bot.start();
