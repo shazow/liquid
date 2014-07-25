@@ -39,7 +39,7 @@ describe('Trade Logic', function() {
         orders.forEach(function(order) {
             state.ordersById[order.id] = order;
         });
-        
+
         it('should instruct NO new exchange orders due to identical order book', function() {
             var orderBook = {
                 'bids': [
