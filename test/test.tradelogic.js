@@ -27,16 +27,15 @@ describe('Trade Logic', function() {
         // TODO move this over to the dummy exchange once that is implemented
         var state = {
             'ordersById': {},
-            'bids': [
-                new Order('1a2b3c', 'BID', '0.123', '227.5')
-            ],
-            'asks': [
+            'orders': [
+                new Order('1a2b3c', 'BID', '0.123', '227.5'),
                 new Order('1a2b3d', 'ASK', '0.123', '912'),
                 new Order('1a2b3e', 'ASK', '0.123', '914')
             ]
         };
-        var orders = state.bids.concat(state.asks);
-        orders.forEach(function(order) {
+
+        // Index orders
+        state.orders.forEach(function(order) {
             state.ordersById[order.id] = order;
         });
 
@@ -143,10 +142,8 @@ describe('Trade Logic', function() {
 
         it('should instruct NO new orders due to identical order book and state', function() {
             var state = {
-                'bids': [
-                    new Order('1a2b3c', 'BID', '0.123', '455')
-                ],
-                'asks': [
+                'orders': [
+                    new Order('1a2b3c', 'BID', '0.123', '455'),
                     new Order('1a2b3d', 'ASK', '0.123', '456'),
                     new Order('1a2b3e', 'ASK', '0.123', '457')
                 ]
@@ -159,10 +156,8 @@ describe('Trade Logic', function() {
 
         it('should instruct NO new orders due to missing order in state', function() {
             var state = {
-                'bids': [
-                    new Order('1a2b3c', 'BID', '0.123', '455')
-                ],
-                'asks': [
+                'orders': [
+                    new Order('1a2b3c', 'BID', '0.123', '455'),
                     new Order('1a2b3e', 'ASK', '0.123', '457')
                 ]
             };
@@ -174,11 +169,9 @@ describe('Trade Logic', function() {
 
         it('should instruct one new ASK order to correspond to a matched BUY order on Origin', function() {
             var state = {
-                'bids': [
+                'orders': [
                     new Order('1a2b3c', 'BID', '0.123', '455'),
-                    new Order('1a2b3f', 'BID', '0.123', '422')
-                ],
-                'asks': [
+                    new Order('1a2b3f', 'BID', '0.123', '422'),
                     new Order('1a2b3d', 'ASK', '0.123', '456'),
                     new Order('1a2b3e', 'ASK', '0.123', '457')
                 ]
@@ -193,10 +186,8 @@ describe('Trade Logic', function() {
 
         it('should instruct one new BID order to correspond to a matched ASK order on Origin', function() {
             var state = {
-                'bids': [
-                    new Order('1a2b3c', 'BID', '0.123', '455')
-                ],
-                'asks': [
+                'orders': [
+                    new Order('1a2b3c', 'BID', '0.123', '455'),
                     new Order('1a2b3d', 'ASK', '0.123', '456'),
                     new Order('1a2b3e', 'ASK', '0.123', '457'),
                     new Order('1a2b3f', 'ASK', '0.123', '422')
@@ -212,11 +203,9 @@ describe('Trade Logic', function() {
 
         it('should instruct a new BID and ASK at identical rates', function() {
             var state = {
-                'bids': [
+                'orders': [
                     new Order('1a2b3c', 'BID', '0.123', '455'),
-                    new Order('1a2b3f', 'BID', '0.123', '422')
-                ],
-                'asks': [
+                    new Order('1a2b3f', 'BID', '0.123', '422'),
                     new Order('1a2b3d', 'ASK', '0.123', '456'),
                     new Order('1a2b3e', 'ASK', '0.123', '457'),
                     new Order('1a2b4a', 'ASK', '0.123', '422')
