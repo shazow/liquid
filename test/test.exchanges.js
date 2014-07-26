@@ -106,7 +106,7 @@ describe('Exchanges', function() {
             assert.equal(changed.length, 0);
 
             var changedOrders = jsonClone(sampleOrders);
-            changedOrders[0].quantity = "1.50000000000000000000";
+            changedOrders[0].executed = "0.50000000000000000000";
             var changed = BitmeExchange.diffOrders(sampleOrders, changedOrders);
             assert.equal(changed.length, 1);
             assert.equal(changed[0].quantity, 0.5);
