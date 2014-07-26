@@ -1,6 +1,7 @@
 var assert = require('assert'),
     BitmeExchange = require('../lib/exchanges/bitme.js').BitmeExchange;
     DummyExchange = require('../lib/exchanges/dummy.js').DummyExchange;
+    diffOrders = require('../lib/order.js').diffOrders,
     Order = require('../lib/order.js').Order;
 
 
@@ -93,23 +94,6 @@ describe('Exchanges', function() {
             assert.equal(o.type, 'ASK');
             assert.equal(o.quantity, 35);
             assert.equal(o.rate, 1);
-        });
-
-        it('should diff orders', function() {
-            var changed = BitmeExchange.diffOrders(sampleOrders, sampleOrders);
-            assert.equal(changed.length, 0);
-
-            var changed = BitmeExchange.diffOrders(sampleOrders, []);
-            assert.equal(changed.length, 2);
-
-            var changed = BitmeExchange.diffOrders([], sampleOrders);
-            assert.equal(changed.length, 0);
-
-            var changedOrders = jsonClone(sampleOrders);
-            changedOrders[0].executed = "0.50000000000000000000";
-            var changed = BitmeExchange.diffOrders(sampleOrders, changedOrders);
-            assert.equal(changed.length, 1);
-            assert.equal(changed[0].quantity, 0.5);
         });
     });
 
