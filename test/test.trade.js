@@ -1,8 +1,8 @@
 var assert = require('assert'),
-    TradeLogic = require('../lib/trade/tradelogic.js').TradeLogic,
+    Trade = require('../lib/trade.js').Trade,
     Order = require('../lib/order.js').Order;
 
-describe('Trade Logic', function() {
+describe('Trading logic', function() {
     describe('Recommend Orders', function() {
         it('should recommend orders with 2x premium (half on bids, double on asks)', function() {
             var orders = {
@@ -15,7 +15,7 @@ describe('Trade Logic', function() {
                 ]
             };
 
-            var recommendedOrders = TradeLogic.recommendOrders(orders, 2.0);
+            var recommendedOrders = Trade.recommendOrders(orders, 2.0);
 
             assert.equal(recommendedOrders.bids[0].rate, 227.5);
             assert.equal(recommendedOrders.asks[0].rate, 912);
@@ -50,7 +50,7 @@ describe('Trade Logic', function() {
                 ]
             };
 
-            var newOrders = TradeLogic.instructExchangeOrders(state, orderBook, 2.0);
+            var newOrders = Trade.instructExchangeOrders(state, orderBook, 2.0);
             assert.deepEqual(newOrders, []);
         });
 
@@ -64,7 +64,7 @@ describe('Trade Logic', function() {
                 ]
             };
 
-            var newOrders = TradeLogic.instructExchangeOrders(state, orderBook, 2.0);
+            var newOrders = Trade.instructExchangeOrders(state, orderBook, 2.0);
             assert.deepEqual(newOrders, []);
         });
 
@@ -80,7 +80,7 @@ describe('Trade Logic', function() {
                 ]
             };
 
-            var newOrders = TradeLogic.instructExchangeOrders(state, orderBook, 2.0);
+            var newOrders = Trade.instructExchangeOrders(state, orderBook, 2.0);
             assert.deepEqual(newOrders, [new Order('1a2b3f', 'BID', '0.123', '229')]);
         });
 
@@ -96,7 +96,7 @@ describe('Trade Logic', function() {
                 ]
             };
 
-            var newOrders = TradeLogic.instructExchangeOrders(state, orderBook, 2.0);
+            var newOrders = Trade.instructExchangeOrders(state, orderBook, 2.0);
             assert.deepEqual(newOrders, [new Order('1a2b3f', 'ASK', '0.123', '916')]);
         });
 
@@ -113,7 +113,7 @@ describe('Trade Logic', function() {
                 ]
             };
 
-            var newOrders = TradeLogic.instructExchangeOrders(state, orderBook);
+            var newOrders = Trade.instructExchangeOrders(state, orderBook);
             assert.deepEqual(newOrders, [
                 new Order('1a2b3f', 'BID', '0.123', '458'),
                 new Order('1a2b4a', 'ASK', '0.123', '458')
@@ -149,7 +149,7 @@ describe('Trade Logic', function() {
                 ]
             };
 
-            var newOrders = TradeLogic.instructOriginOrders(state, orderBook, 2.0);
+            var newOrders = Trade.instructOriginOrders(state, orderBook, 2.0);
 
             assert.deepEqual(newOrders, []);
         });
@@ -162,7 +162,7 @@ describe('Trade Logic', function() {
                 ]
             };
 
-            var newOrders = TradeLogic.instructOriginOrders(state, orderBook, 2.0);
+            var newOrders = Trade.instructOriginOrders(state, orderBook, 2.0);
 
             assert.deepEqual(newOrders, []);
         });
@@ -177,7 +177,7 @@ describe('Trade Logic', function() {
                 ]
             };
 
-            var newOrders = TradeLogic.instructOriginOrders(state, orderBook, 2.0);
+            var newOrders = Trade.instructOriginOrders(state, orderBook, 2.0);
 
             assert.deepEqual(newOrders, [
                 new Order('1a2b3f', 'ASK', '0.123', '844')
@@ -194,7 +194,7 @@ describe('Trade Logic', function() {
                 ]
             };
 
-            var newOrders = TradeLogic.instructOriginOrders(state, orderBook, 2.0);
+            var newOrders = Trade.instructOriginOrders(state, orderBook, 2.0);
 
             assert.deepEqual(newOrders, [
                 new Order('1a2b3f', 'BID', '0.123', '211')
@@ -212,7 +212,7 @@ describe('Trade Logic', function() {
                 ]
             };
 
-            var newOrders = TradeLogic.instructOriginOrders(state, orderBook);
+            var newOrders = Trade.instructOriginOrders(state, orderBook);
 
             assert.deepEqual(newOrders, [
                 new Order('1a2b3f', 'ASK', '0.123', '422'),
