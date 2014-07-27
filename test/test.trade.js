@@ -1,5 +1,5 @@
 var assert = require('assert'),
-    Trade = require('../lib/trade.js').Trade,
+    Trade = require('../lib/trade.js'),
     Order = require('../lib/order.js').Order;
 
 describe('Trading logic', function() {
