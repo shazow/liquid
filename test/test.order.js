@@ -1,5 +1,6 @@
 var assert = require('assert'),
     diffOrders = require('../lib/order.js').diffOrders,
+    aggregateOrders = require('../lib/order.js').aggregateOrders,
     Order = require('../lib/order.js').Order;
 
 
@@ -46,5 +47,45 @@ describe('diffOrders', function() {
         var changed = diffOrders(orders, changedOrders);
         assert.equal(changed.length, 1);
         assert.equal(changed[0].quantity, 0.5);
+    });
+});
+
+
+describe('aggregateOrders', function() {
+    var orders = [
+        new Order(null, 'ASK', '0.500', '2.000'),
+        new Order(null, 'BID', '1.000', '20.000'),
+        new Order(null, 'BID', '1.000', '40.000')
+    ];
+
+    var toObject = function(orders) {
+        return orders.map(function(o) { return o.toObject(); });
+    };
+
+    it('should act as a passthrough with no optional args', function() {
+        var newOrders = aggregateOrders(orders);
+        assert.equal(newOrders.length, 3);
+        assert.deepEqual(newOrders, orders)
+    });
+
+    it('should act as a passthrough with smaller min', function() {
+        var newOrders = aggregateOrders(orders, 0.001);
+        assert.equal(newOrders.length, 3);
+        assert.deepEqual(newOrders, orders)
+    });
+
+    it('should act discard orders not exceeding min', function() {
+        var newOrders = aggregateOrders(orders, 5000);
+        assert.equal(newOrders.length, 0);
+    });
+
+    it('should combine viable orders', function() {
+        var newOrders = aggregateOrders(orders, 50);
+        assert.deepEqual(newOrders, [new Order(null, 'BID', '2.0', '30')]);
+    });
+
+    it('should apply premium to reach a viable order', function() {
+        var newOrders = aggregateOrders(orders, 65, 1.1);
+        assert.deepEqual(newOrders, [new Order(null, 'BID', '2.0', '33')]);
     });
 });
