@@ -3,6 +3,7 @@ var assert = require('assert'),
     DummyExchange = require('../lib/exchanges/dummy.js').DummyExchange;
     Bot = require('../lib/bot.js').Bot;
     Order = require('../lib/order.js').Order,
+    totalValue = require('../lib/order.js').totalValue,
     logger = require('../lib/logger.js');
 
 
@@ -43,9 +44,9 @@ describe('Bot', function() {
             bot.handleRemoteOrderbook(orderbook, function() {
                 var originOrders = origin.getOrders();
                 assert.equal(originOrders.length, 1);
-                assert.equal(originOrders[0].type, 'ASK');
-                assert.equal(originOrders[0].amount, 2);
-                assert.equal(originOrders[0].rate, 1000);
+                assert.equal(originOrders[0].type, 'BID');
+                assert.equal(originOrders[0].quantity.toFixed(), '2');
+                assert.equal(originOrders[0].rate.toFixed(), '250');
 
                 done();
             });
@@ -66,27 +67,23 @@ describe('Bot', function() {
                 var originOrders = origin.getOrders();
                 assert.equal(originOrders.length, 3);
 
-                var types = originOrders.map(function(o) { return o.type; }).sort();
-                assert.deepEqual(types, ['ASK', 'ASK', 'BID']);
-
-                var rates = originOrders.map(function(o) { return o.rate; }).sort();
-                assert.deepEqual(rates, [350, 600, 1000]);
+                var expectedValue = {'asks': 14000, 'bids': 725};
+                assert.deepEqual(totalValue(originOrders), expectedValue);
 
                 done();
             });
         });
 
         it('should react to matched origin trades', function(done) {
-            var someTrade = origin.getOrders()[0];
-            assert(someTrade);
+            var someTrade = new Order(null, 'ASK', '10', '700');
 
             assert.equal(remote.getOrders().length, 0);
             bot.handleOriginTrade(someTrade, function() {
                 var remoteOrders = remote.getOrders()
                 assert.equal(remoteOrders.length, 1);
-                assert.equal(originOrders[0].type, 'BID');
-                assert.equal(originOrders[0].amount, 2);
-                assert.equal(originOrders[0].rate, 500);
+                assert.equal(remoteOrders[0].type, 'BID');
+                assert.equal(remoteOrders[0].quantity.toFixed(), '10');
+                assert.equal(remoteOrders[0].rate.toFixed(), '350');
 
                 done();
             });
