@@ -2,23 +2,29 @@ var assert = require('assert'),
     BigNumber = require('bignumber.js'),
     diffOrders = require('../lib/order.js').diffOrders,
     aggregateOrders = require('../lib/order.js').aggregateOrders,
+    totalValue = require('../lib/order.js').totalValue,
     Order = require('../lib/order.js').Order;
 
 
 describe('Order', function() {
     it('should convert string numbers', function() {
         var order = new Order(null, 'ASK', '0.123', '456');
-        assert(order.quantity.eq(0.123));
-        assert(order.rate.eq(456));
+        assert.equal(order.quantity, 0.123);
+        assert.equal(order.rate, 456);
         assert.equal(order.type, 'ASK');
     });
 
     it('should provide a clone with overrides', function() {
         var order = new Order(null, 'ASK', '0.123', '456');
-        var newOrder = order.clone({'quantity': '3.21', 'type': 'BID'})
+        var newOrder = order.clone({'quantity': '3.21', 'type': 'BID'});
 
-        assert(newOrder.quantity.eq(3.21));
-        assert(newOrder.rate.eq(456));
+        assert.equal(newOrder.quantity, 3.21);
+        assert.equal(newOrder.rate, 456);
+        assert.equal(newOrder.type, 'BID');
+
+        var newOrder = order.clone({}, 2.0, true);
+        assert.equal(newOrder.quantity, 0.123);
+        assert.equal(newOrder.rate, 456/2);
         assert.equal(newOrder.type, 'BID');
     });
 
@@ -71,20 +77,6 @@ describe('aggregateOrders', function() {
 
     var toObject = function(orders) {
         return orders.map(function(o) { return o.toObject(); });
-    };
-
-    var totalValue = function(orders) {
-        var r = {
-            'ASK': BigNumber(0),
-            'BID': BigNumber(0)
-        };
-        orders.forEach(function(o) {
-            r[o.type] = r[o.type].plus(o.quantity.times(o.rate));
-        });
-        return {
-            'asks': r['ASK'].toFixed(),
-            'bids': r['BID'].toFixed(),
-        };
     };
 
     it('should act as a passthrough with no optional args', function() {
