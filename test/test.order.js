@@ -102,6 +102,15 @@ describe('aggregateOrders', function() {
         assert.deepEqual(newOrders, expected);
     });
 
+    it('should recommend orders with premium', function() {
+        // Half on bids, double on asks.
+        var newOrders = aggregateOrders(orders, 0, 2.0);
+        assert.equal(newOrders[0].rate, 40);
+        assert.equal(newOrders[1].rate, 80);
+        assert.equal(newOrders[2].rate, 1);
+
+    });
+
     it('should apply premium to reach a viable order', function() {
         var newOrders = aggregateOrders(orders, 65, 1.1);
         var expected = [new Order(null, 'ASK', '2.0', '33')];
