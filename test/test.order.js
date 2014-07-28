@@ -21,6 +21,16 @@ describe('Order', function() {
         assert(newOrder.rate.eq(456));
         assert.equal(newOrder.type, 'BID');
     });
+
+    it('should return the correct premium by type', function() {
+        // Selling 1 at $100
+        var ask = new Order(null, 'ASK', '1', '100');
+        assert.equal(ask.getPremiumRate(1.05).toFixed(), '105');
+
+        // Buying 1 at $100
+        var ask = new Order(null, 'BID', '1', '100');
+        assert.equal(ask.getPremiumRate(1.05).toFixed(1), '95.2');
+    });
 });
 
 
@@ -141,7 +151,5 @@ describe('aggregateOrders', function() {
         var newOrders = aggregateOrders(orders, 700);
         assert.deepEqual(totalValue(newOrders), expectedValue);
         assert.deepEqual(newOrders, expectedOrders);
-
-
     });
 });
