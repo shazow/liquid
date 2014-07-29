@@ -1,4 +1,4 @@
-// XXX: This is going away.
+// XXX: This is going away once we port over the tests.
 var assert = require('assert'),
     Order = require('../lib/order.js').Order;
 

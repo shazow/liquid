@@ -34,8 +34,8 @@ describe('Order', function() {
         assert.equal(ask.getPremiumRate(1.05).toFixed(), '105');
 
         // Buying 1 at $100
-        var ask = new Order(null, 'BID', '1', '100');
-        assert.equal(ask.getPremiumRate(1.05).toFixed(1), '95.2');
+        var bid = new Order(null, 'BID', '1', '100');
+        assert.equal(bid.getPremiumRate(1.05).toFixed(1), '95.2');
     });
 });
 
