@@ -188,19 +188,15 @@ describe('sortOrders', function() {
 
 
 describe('getSpread', function() {
-    it('should compute the spread of orderbooks', function() {
-        var spread = getSpread({
-            asks: [
-                new Order(null, 'ASK', '1.000', '101.000'),
-                new Order(null, 'ASK', '1.000', '104.000'),
-                new Order(null, 'ASK', '1.000', '106.000')
-            ],
-            bids: [
-                new Order(null, 'BID', '1.000', '99.000'),
-                new Order(null, 'BID', '1.000', '85.000'),
-                new Order(null, 'BID', '1.000', '40.000')
-            ]
-        });
+    it('should compute the spread of orders', function() {
+        var spread = getSpread([
+            new Order(null, 'ASK', '1.000', '101.000'),
+            new Order(null, 'ASK', '1.000', '104.000'),
+            new Order(null, 'ASK', '1.000', '106.000'),
+            new Order(null, 'BID', '1.000', '99.000'),
+            new Order(null, 'BID', '1.000', '85.000'),
+            new Order(null, 'BID', '1.000', '40.000')
+        ]);
 
         assert.equal(Math.round(spread.percent), 2);
         delete spread['percent'];
@@ -209,7 +205,9 @@ describe('getSpread', function() {
             bid: 99,
             ask: 101,
             amount: 2,
-            mean: 100
+            mean: 100,
+            totalValue: 535,
+            totalQuantity: 6
         });
     });
 });
