@@ -1,6 +1,7 @@
 var assert = require('assert'),
-    BitmeExchange = require('../lib/exchanges/bitme.js').BitmeExchange;
-    DummyExchange = require('../lib/exchanges/dummy.js').DummyExchange;
+    DummyExchange = require('../lib/exchanges/dummy.js').DummyExchange,
+    BitmeExchange = require('../lib/exchanges/bitme.js').BitmeExchange,
+    BitstampExchange = require('../lib/exchanges/bitstamp.js').BitstampExchange,
     diffOrders = require('../lib/order.js').diffOrders,
     Order = require('../lib/order.js').Order;
 
@@ -97,4 +98,37 @@ describe('Exchanges', function() {
         });
     });
 
+
+    describe('BitstampExchange', function() {
+        var sampleOrders = [
+            {
+                "id": "1000",
+                "type": "0",
+                "price": "100",
+                "amount": "2",
+            },
+            {
+                "id": "1001",
+                "type": "1",
+                "price": "200",
+                "amount": "3",
+            }
+        ];
+
+        it('should convert orders', function() {
+            var o = BitstampExchange.toOrder(sampleOrders[0]);
+            assert.equal(o.id, '1000');
+            assert.equal(o.exchange, 'bitstamp');
+            assert.equal(o.type, 'BID');
+            assert.equal(o.quantity, 2);
+            assert.equal(o.rate, 100);
+
+            var o = BitstampExchange.toOrder(sampleOrders[1]);
+            assert.equal(o.id, '1001');
+            assert.equal(o.exchange, 'bitstamp');
+            assert.equal(o.type, 'ASK');
+            assert.equal(o.quantity, 3);
+            assert.equal(o.rate, 200);
+        });
+    });
 });
