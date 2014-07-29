@@ -1,9 +1,16 @@
 var assert = require('assert'),
     BigNumber = require('bignumber.js'),
     diffOrders = require('../lib/order.js').diffOrders,
+    sortOrders = require('../lib/order.js').sortOrders,
+    getSpread = require('../lib/order.js').getSpread,
     aggregateOrders = require('../lib/order.js').aggregateOrders,
     totalValue = require('../lib/order.js').totalValue,
     Order = require('../lib/order.js').Order;
+
+
+var toObject = function(orders) {
+    return orders.map(function(o) { return o.toObject(); });
+};
 
 
 describe('Order', function() {
@@ -74,10 +81,6 @@ describe('aggregateOrders', function() {
         new Order(null, 'ASK', '1.000', '40.000'),
         new Order(null, 'BID', '0.500', '2.000')
     ];
-
-    var toObject = function(orders) {
-        return orders.map(function(o) { return o.toObject(); });
-    };
 
     it('should act as a passthrough with no optional args', function() {
         var newOrders = aggregateOrders(orders);
@@ -152,5 +155,61 @@ describe('aggregateOrders', function() {
         var newOrders = aggregateOrders(orders, 700);
         assert.deepEqual(totalValue(newOrders), expectedValue);
         assert.deepEqual(newOrders, expectedOrders);
+    });
+});
+
+describe('sortOrders', function() {
+    it('should sort orders by spread', function() {
+        assert.deepEqual(sortOrders([
+            new Order(null, 'ASK', '1.000', '60.000'),
+            new Order(null, 'ASK', '1.000', '30.000'),
+            new Order(null, 'ASK', '1.000', '40.000'),
+            new Order(null, 'ASK', '1.000', '20.000')
+        ]), [
+            new Order(null, 'ASK', '1.000', '20.000'),
+            new Order(null, 'ASK', '1.000', '30.000'),
+            new Order(null, 'ASK', '1.000', '40.000'),
+            new Order(null, 'ASK', '1.000', '60.000')
+        ], 0);
+
+        assert.deepEqual(sortOrders([
+            new Order(null, 'ASK', '1.000', '60.000'),
+            new Order(null, 'ASK', '1.000', '30.000'),
+            new Order(null, 'ASK', '1.000', '40.000'),
+            new Order(null, 'ASK', '1.000', '20.000')
+        ], 34), [
+            new Order(null, 'ASK', '1.000', '30.000'),
+            new Order(null, 'ASK', '1.000', '40.000'),
+            new Order(null, 'ASK', '1.000', '20.000'),
+            new Order(null, 'ASK', '1.000', '60.000')
+        ]);
+    });
+});
+
+
+describe('getSpread', function() {
+    it('should compute the spread of orderbooks', function() {
+        var spread = getSpread({
+            asks: [
+                new Order(null, 'ASK', '1.000', '101.000'),
+                new Order(null, 'ASK', '1.000', '104.000'),
+                new Order(null, 'ASK', '1.000', '106.000')
+            ],
+            bids: [
+                new Order(null, 'BID', '1.000', '99.000'),
+                new Order(null, 'BID', '1.000', '85.000'),
+                new Order(null, 'BID', '1.000', '40.000')
+            ]
+        });
+
+        assert.equal(Math.round(spread.percent), 2);
+        delete spread['percent'];
+
+        assert.deepEqual(spread, {
+            bid: 99,
+            ask: 101,
+            amount: 2,
+            mean: 100
+        });
     });
 });
