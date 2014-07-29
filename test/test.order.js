@@ -1,5 +1,6 @@
 var assert = require('assert'),
     BigNumber = require('bignumber.js'),
+    patchOrders = require('../lib/order.js').patchOrders,
     diffOrders = require('../lib/order.js').diffOrders,
     sortOrders = require('../lib/order.js').sortOrders,
     getSpread = require('../lib/order.js').getSpread,
@@ -156,7 +157,34 @@ describe('aggregateOrders', function() {
         assert.deepEqual(totalValue(newOrders), expectedValue);
         assert.deepEqual(newOrders, expectedOrders);
     });
+
+    it('should work with a single order', function() {
+        var orders = [
+            new Order(null, 'BID', '2', '500')
+        ];
+        var newOrders = aggregateOrders(orders, 0, 2.0);
+        var expected = [new Order(null, 'BID', '2.0', '250')];
+        assert.deepEqual(newOrders, expected);
+    });
 });
+
+
+describe('patchOrders', function() {
+    it('should instruct single order changes', function() {
+        var newOrders = [new Order(null, 'BID', '2.0', '250')];
+        var instructions = patchOrders([], newOrders);
+        assert.deepEqual(instructions.cancel, []);
+        assert.deepEqual(instructions.place, newOrders);
+    });
+
+    it('should instruct removal of orders', function() {
+        var oldOrders = [new Order(null, 'BID', '2.0', '250')];
+        var instructions = patchOrders(oldOrders, []);
+        assert.deepEqual(instructions.cancel, oldOrders);
+        assert.deepEqual(instructions.place, []);
+    });
+});
+
 
 describe('sortOrders', function() {
     it('should sort orders by spread', function() {
@@ -209,5 +237,24 @@ describe('getSpread', function() {
             totalValue: 535,
             totalQuantity: 6
         });
+    });
+
+    it('should handle one-sided orderbooks', function() {
+        var spread = getSpread([
+            new Order(null, 'ASK', '1.000', '101.000'),
+            new Order(null, 'ASK', '1.000', '104.000'),
+            new Order(null, 'ASK', '1.000', '106.000'),
+        ]);
+
+        assert.deepEqual(spread, {
+            bid: null,
+            ask: 101,
+            percent: undefined,
+            amount: undefined,
+            mean: 101,
+            totalValue: 311,
+            totalQuantity: 3
+        });
+
     });
 });
