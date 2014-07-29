@@ -31,6 +31,7 @@ var printApiKeys = function() {
 program
     .version(pkg.version)
     .option('--live', 'Use real APIs, instead of DummyExchanges.')
+    .option('--reset', 'Start and shutdown immediately after reset.')
     .option('--pretend', '(When live) Don\'t send trades, only print them.')
     .option('--premium <multiplier>', 'Multiplier to apply over remote exchange prices. [1.05]', parseFloat)
     .option('-v, --verbosity [level]', 'Set logging level verbosity (warn, info, debug). [info]')
