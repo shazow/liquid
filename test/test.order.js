@@ -233,6 +233,8 @@ describe('getSpread', function() {
             bid: 99,
             ask: 101,
             amount: 2,
+            numBids: 3,
+            numAsks: 3,
             mean: 100,
             totalValue: 535,
             totalQuantity: 6
@@ -249,6 +251,8 @@ describe('getSpread', function() {
         assert.deepEqual(spread, {
             bid: null,
             ask: 101,
+            numBids: 0,
+            numAsks: 3,
             percent: undefined,
             amount: undefined,
             mean: 101,
