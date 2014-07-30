@@ -34,6 +34,46 @@ $ ./liquid --help
 ```
 
 
+Start in DummyExchange mode, aggregating orders to value of $500 at a premium of
+150%:
+
+```
+$ ./liquid -v --minValue 500 --premium 1.5
+debug:   Set debug level: "debug"
+info:    Bot created in dummy mode. All trades will be fake using a DummyExchange.
+debug:   [bot] init values: origin=DummyOrigin, remote=DummyRemote, premium=undefined, resetOnly=undefined, minValue=undefined, maxOrders=undefined
+info:    Resetting exchanges into a safe state.
+debug:   [bot] Binding to exchange events.
+info:    Bot started.
+...
+```
+
+Start in LIVE mode, but only pretend to make trades. For this, we'll need to
+export the environment variables mentioned in `--help` first.
+
+Once the environment variables have been set:
+
+```
+$ ./liquid -v --live --pretend --minValue 500 --premium 1.5
+debug:   Set debug level: "debug"
+info:    Bot created in PRETEND mode. Orderbook will be watched but no real trades will be placed.
+debug:   [bot] init values: origin=bitme, remote=bitstamp, premium=1.5, resetOnly=undefined, minValue=500, maxOrders=undefined
+debug:   [exchange:bitme] Preparing.
+debug:   [exchange:bitme] Verifying credentials.
+debug:   [exchange:bitme] Loaded placed orders: 0
+debug:   [exchange:bitme] Loaded balance: currency_cd=BTC, currency_name=Bitcoin, balance=1.00000000000000000000, available=1.00000000000000000000, cleared=1.00000000000000000000, currency_cd=USD, currency_name=US Dollar, balance=1000.00000000000000000000, available=1000.00000000000000000000, cleared=1000.00000000000000000000
+debug:   [exchange:bitme] Starting tick loop.
+debug:   [exchange:bitstamp] Preparing.
+debug:   [exchange:bitstamp] Loaded placed orders: 0
+debug:   [exchange:bitstamp] Loaded balance: btc_reserved=0, fee=0.5000, btc_available=1.00000000, usd_reserved=0, btc_balance=1.00000000, usd_balance=0.00, usd_available=0.00
+debug:   [exchange:bitstamp] Subscribing to orderbook stream.
+info:    Resetting exchanges into a safe state.
+debug:   [bot] Binding to exchange events.
+info:    Bot started.
+...
+```
+
+
 ## Research
 
 ### Codebases to consider
