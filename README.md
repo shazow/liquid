@@ -31,6 +31,14 @@ $ ./liquid --help
     -h, --help              output usage information
     -V, --version           output the version number
     ...
+
+  API keys loaded from environment variables:
+
+    ✖ BITSTAMP_CLIENT_ID
+    ✖ BITSTAMP_KEY
+    ✖ BITSTAMP_SECRET
+    ✖ BITME_KEY
+    ✖ BITME_SECRET
 ```
 
 
@@ -50,6 +58,14 @@ info:    Bot started.
 
 Start in LIVE mode, but only pretend to make trades. For this, we'll need to
 export the environment variables mentioned in `--help` first.
+
+```
+$ export BITSTAMP_CLIENT_ID="XXX"
+$ export BITSTAMP_KEY="XXX"
+$ export BITSTAMP_SECRET="XXX"
+$ export BITME_KEY="XXX"
+$ export BITME_SECRET="XXX"
+```
 
 Once the environment variables have been set:
 
