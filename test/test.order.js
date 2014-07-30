@@ -183,6 +183,26 @@ describe('patchOrders', function() {
         assert.deepEqual(instructions.cancel, oldOrders);
         assert.deepEqual(instructions.place, []);
     });
+
+    it('should minimize redundant trades', function() {
+        var instructions = patchOrders([
+            new Order(null, 'BID', '2.0', '250'),
+            new Order(null, 'BID', '2.0', '300')
+        ], [
+            new Order(null, 'ASK', '2.0', '250'),
+            new Order(null, 'BID', '2.0', '300'),
+            new Order(null, 'BID', '2.0', '350')
+        ]);
+
+        assert.deepEqual(instructions.place, [
+            new Order(null, 'ASK', '2.0', '250'),
+            new Order(null, 'BID', '2.0', '350')
+        ]);
+
+        assert.deepEqual(instructions.cancel, [
+            new Order(null, 'BID', '2.0', '250')
+        ]);
+    });
 });
 
 
@@ -210,6 +230,38 @@ describe('sortOrders', function() {
             new Order(null, 'ASK', '1.000', '40.000'),
             new Order(null, 'ASK', '1.000', '20.000'),
             new Order(null, 'ASK', '1.000', '60.000')
+        ]);
+    });
+
+    it('should sort deterministically', function() {
+        assert.deepEqual(sortOrders([
+            new Order(null, 'ASK', '1.000', '499.000'),
+            new Order(null, 'ASK', '1.000', '501.000')
+        ], 500), [
+            new Order(null, 'ASK', '1.000', '499.000'),
+            new Order(null, 'ASK', '1.000', '501.000')
+        ]);
+
+        assert.deepEqual(sortOrders([
+            new Order(null, 'ASK', '1.000', '501.000'),
+            new Order(null, 'ASK', '1.000', '499.000')
+        ], 500), [
+            new Order(null, 'ASK', '1.000', '499.000'),
+            new Order(null, 'ASK', '1.000', '501.000')
+        ]);
+    });
+
+    it('should place BIDs first when other things are equal', function() {
+        assert.deepEqual(sortOrders([
+            new Order(null, 'ASK', '1.000', '30.000'),
+            new Order(null, 'BID', '1.000', '30.000'),
+            new Order(null, 'BID', '1.000', '40.000'),
+            new Order(null, 'ASK', '1.000', '40.000')
+        ]), [
+            new Order(null, 'BID', '1.000', '30.000'),
+            new Order(null, 'ASK', '1.000', '30.000'),
+            new Order(null, 'BID', '1.000', '40.000'),
+            new Order(null, 'ASK', '1.000', '40.000')
         ]);
     });
 });
