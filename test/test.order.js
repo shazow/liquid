@@ -83,6 +83,17 @@ describe('diffOrders', function() {
         assert.equal(changed.length, 1);
         assert.equal(changed[0].quantity, 0.5);
     });
+
+    it('should diff missingOnly', function() {
+        var changed = diffOrders(orders, [orders[0]], true);
+        assert.deepEqual(changed, [orders[1]]);
+
+        var changed = diffOrders([orders[0]], orders, true);
+        assert.deepEqual(changed, []);
+
+        var changed = diffOrders(orders, [new Order('3', 'BID', '1.0', '3')].concat(orders), true);
+        assert.deepEqual(changed, []);
+    });
 });
 
 
@@ -212,6 +223,18 @@ describe('patchOrders', function() {
         assert.deepEqual(instructions.cancel, [
             new Order(null, 'BID', '2.0', '250')
         ]);
+
+        var instructions = patchOrders([
+            new Order(null, 'BID', '2.0', '250'),
+            new Order(null, 'BID', '2.0', '300'),
+            new Order(null, 'ASK', '2.0', '350')
+        ], [
+            new Order(null, 'BID', '2.0', '250'),
+            new Order(null, 'BID', '2.0', '300'),
+            new Order(null, 'ASK', '2.0', '350')
+        ]);
+
+        assert.deepEqual(instructions.place, []);
     });
 });
 
