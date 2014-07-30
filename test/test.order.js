@@ -45,6 +45,16 @@ describe('Order', function() {
         var bid = new Order(null, 'BID', '1', '100');
         assert.equal(bid.getPremiumRate(1.05).toFixed(1), '95.2');
     });
+
+    it('should compare to other orders', function() {
+        var o = new Order(null, 'ASK', '1', '100');
+        assert.equal(o.comparedTo(new Order(null, 'ASK', '1', '100')), 0);
+        assert.equal(o.comparedTo(new Order(null, 'ASK', '1', '95')), 1);
+        assert.equal(o.comparedTo(new Order(null, 'ASK', '1', '105')), -1);
+        assert.equal(o.comparedTo(new Order(null, 'BID', '1', '100')), 1);
+        assert.equal(o.comparedTo(new Order(null, 'ASK', '2', '100')), -1);
+        assert.equal(o.comparedTo(new Order(null, 'ASK', '0.5', '100')), 1);
+    });
 });
 
 
