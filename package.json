@@ -14,7 +14,8 @@
     "pusher-node-client": "0.0.8",
     "sequelize": "^1.7.9",
     "sqlite3": "^2.2.4",
-    "winston": "^0.7.3"
+    "winston": "^0.7.3",
+    "winston-mail": "^0.2.7"
   },
   "devDependencies": {
     "mocha": "^1.21.0"
