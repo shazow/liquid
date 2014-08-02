@@ -38,8 +38,10 @@ describe('Bot', function() {
             assert.equal(bot.resetOnly, undefined);
             assert.equal(bot.maxOrders, undefined);
             assert.deepEqual(bot.stats, {
-                numTraded: 0,
-                valueTraded: 0,
+                numMatched: 0,
+                valueMatched: 0,
+                numPending: 0,
+                valuePending: 0,
                 premiumProfit: 0
             });
 
@@ -102,8 +104,10 @@ describe('Bot', function() {
                 assert.equal(remoteOrders[0].rate.toFixed(), '350');
 
                 assert.deepEqual(bot.stats, {
-                    numTraded: 0,
-                    valueTraded: 0,
+                    numMatched: 0,
+                    valueMatched: 0,
+                    numPending: 1,
+                    valuePending: 3500,
                     premiumProfit: 0
                 });
 
@@ -117,8 +121,10 @@ describe('Bot', function() {
 
             bot.handleRemoteTrade(order, function() {
                 assert.deepEqual(bot.stats, {
-                    numTraded: 1,
-                    valueTraded: 7000,
+                    numMatched: 1,
+                    valueMatched: 7000,
+                    numPending: 0,
+                    valuePending: 0,
                     premiumProfit: 3500
                 });
 
@@ -127,14 +133,18 @@ describe('Bot', function() {
         });
 
         it('should stop trading after stopAfter is reached', function(done) {
-            var order = new Order(null, 'ASK', '1', '700');
-
             assert.equal(bot.state, 'start');
-            bot.handleRemoteTrade(order, function() {
+
+            // Inject a fake order just to test the condition. It will go into
+            // the negatives, but oh well.
+            var order = new Order(null, 'ASK', '1', '700');
+            bot.handleOriginTrade(order, function() {
                 assert.deepEqual(bot.stats, {
-                    numTraded: 2,
-                    valueTraded: 7350,
-                    premiumProfit: 3850
+                    numMatched: 1,
+                    valueMatched: 7000,
+                    numPending: 1,
+                    valuePending: 700,
+                    premiumProfit: 3500
                 });
 
                 assert.equal(bot.state, 'idle');
