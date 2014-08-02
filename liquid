@@ -35,7 +35,8 @@ program
     .option('--pretend', '(When live) Don\'t send trades, only print them.')
     .option('--premium <multiplier>', 'Multiplier to apply over remote exchange prices. [1.05]', parseFloat)
     .option('--minValue <value>', 'Aggregate orders until their total value exceeds this. [10]', parseFloat)
-    .option('--maxOrders <value>', 'Maximum number of orders to create on the origin exchange. [5]', parseInt)
+    .option('--maxOrders <value>', 'Maximum number of orders to maintain on the origin exchange. [10]', parseInt)
+    .option('--stopAfter <count>', 'Only complete this many trades before stopping.', parseInt)
     .option('--email [address]', 'Send alert-level logs to this email address.')
     .option('-v, --verbosity [level]', 'Set logging level verbosity (warn, info, debug). [info]')
     .on('--help', printApiKeys);

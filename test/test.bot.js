@@ -37,6 +37,11 @@ describe('Bot', function() {
             assert.equal(bot.minValue, undefined);
             assert.equal(bot.resetOnly, undefined);
             assert.equal(bot.maxOrders, undefined);
+            assert.deepEqual(bot.stats, {
+                numTraded: 0,
+                valueTraded: 0,
+                premiumProfit: 0
+            });
         });
 
         it('should react to remote orderbook updates (from empty)', function(done) {
@@ -89,6 +94,27 @@ describe('Bot', function() {
                 assert.equal(remoteOrders[0].type, 'BID');
                 assert.equal(remoteOrders[0].quantity.toFixed(), '10');
                 assert.equal(remoteOrders[0].rate.toFixed(), '350');
+
+                assert.deepEqual(bot.stats, {
+                    numTraded: 0,
+                    valueTraded: 0,
+                    premiumProfit: 0
+                });
+
+                done();
+            });
+        });
+
+        it('should react to completed trades', function(done) {
+            var order = remote.getOrders()[0];
+            remote.deleteOrder(order);
+
+            bot.handleRemoteTrade(order, function() {
+                assert.deepEqual(bot.stats, {
+                    numTraded: 1,
+                    valueTraded: 7000,
+                    premiumProfit: 3500
+                });
 
                 done();
             });
