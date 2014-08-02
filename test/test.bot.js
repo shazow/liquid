@@ -30,9 +30,9 @@ describe('Bot', function() {
     describe('Trade Scenarios', function() {
         var origin = new DummyExchange('origin');
         var remote = new DummyExchange('remote');
-        var bot = new Bot(origin, remote, {premium: 2.0});
+        var bot = new Bot(origin, remote, {premium: 2.0, stopAfter: 2});
 
-        it('should instantiate the bot correctly', function() {
+        it('should instantiate the bot correctly', function(done) {
             assert.equal(bot.premium, 2.0);
             assert.equal(bot.minValue, undefined);
             assert.equal(bot.resetOnly, undefined);
@@ -41,6 +41,12 @@ describe('Bot', function() {
                 numTraded: 0,
                 valueTraded: 0,
                 premiumProfit: 0
+            });
+
+            assert.equal(bot.state, 'idle');
+            bot.start(function() {
+                assert.equal(bot.state, 'start');
+                done();
             });
         });
 
@@ -118,6 +124,23 @@ describe('Bot', function() {
 
                 done();
             });
+        });
+
+        it('should stop trading after stopAfter is reached', function(done) {
+            var order = new Order(null, 'ASK', '1', '700');
+
+            assert.equal(bot.state, 'start');
+            bot.handleRemoteTrade(order, function() {
+                assert.deepEqual(bot.stats, {
+                    numTraded: 2,
+                    valueTraded: 7350,
+                    premiumProfit: 3850
+                });
+
+                assert.equal(bot.state, 'idle');
+                done();
+            });
+
         });
     });
 });
