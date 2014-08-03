@@ -7,7 +7,7 @@ var pkg = require('./package.json'),
 
 
 // Inject API keys from environment variables.
-program.api_keys = {
+program.apiKeys = {
     'BITSTAMP_CLIENT_ID': process.env.BITSTAMP_CLIENT_ID,
     'BITSTAMP_KEY': process.env.BITSTAMP_KEY,
     'BITSTAMP_SECRET': process.env.BITSTAMP_SECRET,
@@ -20,8 +20,8 @@ var printApiKeys = function() {
     // Print API key instructions
     console.log('  API keys loaded from environment variables:\n');
 
-    for (var key in program.api_keys) {
-        var bullet = program.api_keys[key] ? '✓' : '✖';
+    for (var key in program.apiKeys) {
+        var bullet = program.apiKeys[key] ? '✓' : '✖';
         console.log('    ' + bullet + ' ' + key);
     }
 
