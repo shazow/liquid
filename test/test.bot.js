@@ -37,7 +37,7 @@ describe('Bot', function() {
             assert.equal(bot.minValue, undefined);
             assert.equal(bot.resetOnly, undefined);
             assert.equal(bot.maxOrders, undefined);
-            assert.deepEqual(bot.stats, {
+            assert.deepEqual(bot.dumpState().stats, {
                 numMatched: 0,
                 valueMatched: 0,
                 numPending: 0,
@@ -103,7 +103,7 @@ describe('Bot', function() {
                 assert.equal(remoteOrders[0].quantity.toFixed(), '10');
                 assert.equal(remoteOrders[0].rate.toFixed(), '350');
 
-                assert.deepEqual(bot.stats, {
+                assert.deepEqual(bot.dumpState().stats, {
                     numMatched: 0,
                     valueMatched: 0,
                     numPending: 1,
@@ -120,7 +120,7 @@ describe('Bot', function() {
             remote.deleteOrder(order);
 
             bot.handleRemoteTrade(order, function() {
-                assert.deepEqual(bot.stats, {
+                assert.deepEqual(bot.dumpState().stats, {
                     numMatched: 1,
                     valueMatched: 7000,
                     numPending: 0,
@@ -139,7 +139,7 @@ describe('Bot', function() {
             // the negatives, but oh well.
             var order = new Order(null, 'ASK', '1', '700');
             bot.handleOriginTrade(order, function() {
-                assert.deepEqual(bot.stats, {
+                assert.deepEqual(bot.dumpState().stats, {
                     numMatched: 1,
                     valueMatched: 7000,
                     numPending: 1,
