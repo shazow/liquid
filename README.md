@@ -70,7 +70,7 @@ $ export BITME_SECRET="XXX"
 Once the environment variables have been set:
 
 ```
-$ ./liquid -v --live --pretend --minValue 500 --premium 1.5
+$ ./liquid -v --LIVE --pretend --minValue 500 --premium 1.5
 debug:   Set debug level: "debug"
 info:    Bot created in PRETEND mode. Orderbook will be watched but no real trades will be placed.
 debug:   [bot] init values: origin=bitme, remote=bitstamp, premium=1.5, resetOnly=undefined, minValue=500, maxOrders=undefined

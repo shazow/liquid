@@ -96,6 +96,28 @@ describe('Exchanges', function() {
             assert.equal(o.quantity, 35);
             assert.equal(o.rate, 1);
         });
+
+        var sampleAccounts = [
+            {
+                "currency_cd": "BTC",
+                "currency_name": "Bitcoin",
+                "balance": "40.39990000000000000000",
+                "available": "0.39990000000000000000"
+            },
+            {
+                "currency_cd": "USD",
+                "currency_name": "US Dollar",
+                "balance": "101.40052440000000000000",
+                "available": "100.40052440000000000000"
+            }
+        ];
+
+        it('should convert balances', function() {
+            var balance = BitmeExchange.toBalance(sampleAccounts);
+
+            assert.equal(balance.value, sampleAccounts[1].available);
+            assert.equal(balance.quantity, sampleAccounts[0].available);
+        });
     });
 
 
