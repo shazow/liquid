@@ -8,7 +8,7 @@ var assert = require('assert'),
 
 
 describe('Bot', function() {
-    logger.level = 'warn';
+    logger.level = 'error';
 
     it('should change state', function() {
         var exch1 = new DummyExchange('1');
