@@ -7,6 +7,16 @@ to track completed orders. Once a Bitme completed order is noticed, then it will
 place a corresponding (sans-premium) order on the remote exchange.
 
 
+## Warning
+
+If you plan on using this bot, be prepared to lose money.
+
+While the code is reasonably well-tested, there are still many edge cases that
+may not be covered such as unlikely crashes or extreme market volatility.
+
+Keep a balance only of what you're willing to lose, and monitor the bot closely.
+
+
 ## Quickstart
 
 Run the tests:
