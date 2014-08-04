@@ -4,6 +4,7 @@ var assert = require('assert'),
     diffOrders = require('../lib/order.js').diffOrders,
     sortOrders = require('../lib/order.js').sortOrders,
     getSpread = require('../lib/order.js').getSpread,
+    getBudget = require('../lib/order.js').getBudget,
     aggregateOrders = require('../lib/order.js').aggregateOrders,
     budgetOrders = require('../lib/order.js').budgetOrders,
     totalValue = require('../lib/order.js').totalValue,
@@ -361,6 +362,38 @@ describe('sortOrders', function() {
             new Order(null, 'BID', '1.000', '40.000'),
             new Order(null, 'ASK', '1.000', '40.000')
         ]);
+    });
+});
+
+
+describe('getBudget', function() {
+    it('should compute a simple budget', function() {
+        var budget = getBudget({quantity: 1, value: 1000}, {quantity: 1, value: 0});
+        assert.equal(budget.quantity.toNumber(), 1);
+        assert.equal(budget.value.toNumber(), 0);
+
+        var budget = getBudget({quantity: 1, value: 1000}, {quantity: 1, value: 1000});
+        assert.equal(budget.quantity.toNumber(), 1);
+        assert.equal(budget.value.toNumber(), 1000);
+
+        var budget = getBudget({quantity: 1, value: 1000}, {quantity: 0.5, value: 2000});
+        assert.equal(budget.quantity.toNumber(), 0.5);
+        assert.equal(budget.value.toNumber(), 1000);
+    });
+
+    it('should account for premiums', function() {
+        var budget = getBudget({quantity: 1, value: 1000}, {quantity: 1, value: 0}, 2);
+        assert.equal(budget.quantity.toNumber(), 1);
+        assert.equal(budget.value.toNumber(), 0);
+
+        var budget = getBudget({quantity: 1, value: 1000}, {quantity: 1, value: 500}, 2);
+        assert.equal(budget.quantity.toNumber(), 1);
+        assert.equal(budget.value.toNumber(), 500);
+
+        // $1000 on origin is worth $2000 on remote with x2 premium.
+        var budget = getBudget({quantity: 1, value: 1000}, {quantity: 1, value: 3000}, 2);
+        assert.equal(budget.quantity.toNumber(), 1);
+        assert.equal(budget.value.toNumber(), 2000);
     });
 });
 
