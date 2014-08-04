@@ -60,6 +60,24 @@ describe('Exchanges', function() {
             exchange.replaceOrders([]);
             assert.deepEqual(exchange.getOrders(), []);
         });
+
+        it('should track balance', function() {
+            var exchange = new DummyExchange();
+            exchange.setBalance(10, 1000);
+
+            exchange.saveOrder(new Order('foo', 'ASK', 1, 100)); // Sell 1 @ $100
+            assert.equal(exchange.balance.quantity.toNumber(), 9);
+
+            exchange.saveOrder(new Order('bar', 'BID', 2, 100)); // Buy 2 @ $100
+            assert.equal(exchange.balance.value.toNumber(), 800);
+
+            exchange.deleteOrder(exchange.getOrders()[0]);
+            assert.equal(exchange.balance.quantity.toNumber(), 10);
+
+            exchange.deleteOrder(exchange.getOrders()[0]);
+            assert.equal(exchange.balance.value.toNumber(), 1000);
+        });
+
     });
 
 

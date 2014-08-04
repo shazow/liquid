@@ -5,6 +5,7 @@ var assert = require('assert'),
     sortOrders = require('../lib/order.js').sortOrders,
     getSpread = require('../lib/order.js').getSpread,
     aggregateOrders = require('../lib/order.js').aggregateOrders,
+    budgetOrders = require('../lib/order.js').budgetOrders,
     totalValue = require('../lib/order.js').totalValue,
     Order = require('../lib/order.js').Order;
 
@@ -142,6 +143,15 @@ describe('aggregateOrders', function() {
         assert.deepEqual(newOrders, expected);
     });
 
+    it('should work with a single order', function() {
+        var orders = [
+            new Order(null, 'BID', '2', '500')
+        ];
+        var newOrders = aggregateOrders(orders, 0, 2.0);
+        var expected = [new Order(null, 'BID', '2.0', '250')];
+        assert.deepEqual(newOrders, expected);
+    });
+
     it('should aggregate multiple orders', function() {
         var orders = [
             new Order(null, 'ASK', '0.500', '500'),
@@ -178,14 +188,69 @@ describe('aggregateOrders', function() {
         assert.deepEqual(totalValue(newOrders), expectedValue);
         assert.deepEqual(newOrders, expectedOrders);
     });
+});
 
-    it('should work with a single order', function() {
+
+describe('budgetOrders', function() {
+    it('should bundle orders that fit the budget', function() {
         var orders = [
-            new Order(null, 'BID', '2', '500')
+            new Order(null, 'ASK', '0.500', '500'),
+            new Order(null, 'ASK', '1.500', '550'),
+            new Order(null, 'ASK', '3.000', '600'),
+            new Order(null, 'ASK', '1.000', '610'),
+            new Order(null, 'ASK', '0.001', '600'),
+            new Order(null, 'BID', '1.000', '400'),
+            new Order(null, 'BID', '1.000', '415'),
+            new Order(null, 'BID', '2.000', '450'),
+            new Order(null, 'BID', '2.000', '450'),
+            new Order(null, 'BID', '0.001', '450')
         ];
-        var newOrders = aggregateOrders(orders, 0, 2.0);
-        var expected = [new Order(null, 'BID', '2.0', '250')];
-        assert.deepEqual(newOrders, expected);
+
+        var expectedOrders = [
+            new Order(null, 'ASK', '0.500', '500'),
+            new Order(null, 'ASK', '1.500', '550'),
+            new Order(null, 'ASK', '0.001', '600'),
+            new Order(null, 'BID', '1.000', '400'),
+            new Order(null, 'BID', '1.000', '415'),
+            new Order(null, 'BID', '0.001', '450')
+        ];
+
+        var budget = {
+            quantity: BigNumber(3),
+            value: BigNumber(1200)
+        };
+        var newOrders = budgetOrders(orders, budget);
+        assert.deepEqual(newOrders, expectedOrders);
+    });
+
+    it('should work with one-sided budgets', function() {
+        var orders = [
+            new Order(null, 'ASK', '0.500', '500'),
+            new Order(null, 'BID', '1.000', '400'),
+            new Order(null, 'BID', '0.001', '450')
+        ];
+
+        var budget = {
+            quantity: BigNumber(3),
+            value: BigNumber(0)
+        };
+
+        var newOrders = budgetOrders(orders, budget);
+        assert.deepEqual(newOrders, []);
+
+        var newOrders = budgetOrders(orders, budget);
+        assert.deepEqual([], []);
+    });
+
+    it('should work with no budget', function() {
+        var orders = [
+            new Order(null, 'ASK', '0.500', '500'),
+            new Order(null, 'BID', '1.000', '400'),
+            new Order(null, 'BID', '0.001', '450')
+        ];
+
+        var newOrders = budgetOrders(orders);
+        assert.deepEqual(newOrders, orders);
     });
 });
 
