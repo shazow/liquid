@@ -1,5 +1,6 @@
 var assert = require('assert'),
     BigNumber = require('bignumber.js'),
+    Order = require('../lib/order.js').Order,
     patchOrders = require('../lib/order.js').patchOrders,
     diffOrders = require('../lib/order.js').diffOrders,
     sortOrders = require('../lib/order.js').sortOrders,
@@ -193,6 +194,13 @@ describe('aggregateOrders', function() {
 
 
 describe('budgetOrders', function() {
+    var balance = function(quantity, value) {
+        return {
+            quantity: BigNumber(quantity),
+            value: BigNumber(value)
+        }
+    };
+
     it('should bundle orders that fit the budget', function() {
         var orders = [
             new Order(null, 'ASK', '0.500', '500'),
@@ -216,10 +224,7 @@ describe('budgetOrders', function() {
             new Order(null, 'BID', '0.001', '450')
         ];
 
-        var budget = {
-            quantity: BigNumber(3),
-            value: BigNumber(1200)
-        };
+        var budget = getBudget(balance(3, 1200), balance(3, 1200));
         var newOrders = budgetOrders(orders, budget);
         assert.deepEqual(newOrders, expectedOrders);
     });
@@ -227,23 +232,50 @@ describe('budgetOrders', function() {
     it('should work with one-sided budgets', function() {
         var orders = [
             new Order(null, 'ASK', '0.500', '500'),
-            new Order(null, 'BID', '1.000', '400'),
+            new Order(null, 'BID', '1.000', '475'),
             new Order(null, 'BID', '0.001', '450')
         ];
 
-        var budget = {
-            quantity: BigNumber(3),
-            value: BigNumber(0)
-        };
+        // Remote balance to buy, origin balance to sell
+        var budget = getBudget(balance(0.5, 0), balance(0, 250));
+        var r = budgetOrders(orders, budget);
+        assert.deepEqual(r, [orders[0]]);
 
-        var newOrders = budgetOrders(orders, budget);
-        assert.deepEqual(newOrders, []);
+        // x2 premium
+        var budget = getBudget(balance(0.5, 0), balance(0, 250), 2.0);
+        var r = budgetOrders(orders, budget);
+        assert.deepEqual(r, [orders[0]]);
 
-        var newOrders = budgetOrders(orders, budget);
-        assert.deepEqual([], []);
+        // Remote balance to sell, origin balance to buy
+        var budget = getBudget(balance(0, 475), balance(2, 0));
+        var r = budgetOrders(orders, budget);
+        assert.deepEqual(r, [orders[1]]);
+
+        var budget = getBudget(balance(1500, 475), balance(2, 0));
+        var r = budgetOrders(orders, budget);
+        assert.deepEqual(r, [orders[1]]);
+
+        var budget = getBudget(balance(0, 500), balance(2, 0));
+        var r = budgetOrders(orders, budget);
+        assert.deepEqual(r, [orders[1], orders[2]]);
+
+        // x2 premium
+        var budget = getBudget(balance(0, 475/2), balance(2, 0), 2.0);
+        var r = budgetOrders(orders, budget);
+        assert.deepEqual(r, [orders[1]]);
+
+        // Both for funsies.
+        var budget = getBudget(balance(0.5, 500), balance(1, 250));
+        var r = budgetOrders(orders, budget);
+        assert.deepEqual(r, [orders[0], orders[1]]);
+
+        // Neither for funsies.
+        var budget = getBudget(balance(0.4, 350), balance(0.0009, 240));
+        var r = budgetOrders(orders, budget);
+        assert.deepEqual(r, []);
     });
 
-    it('should work with no budget', function() {
+    it('should work with empty inputs', function() {
         var orders = [
             new Order(null, 'ASK', '0.500', '500'),
             new Order(null, 'BID', '1.000', '400'),
@@ -252,6 +284,10 @@ describe('budgetOrders', function() {
 
         var newOrders = budgetOrders(orders);
         assert.deepEqual(newOrders, orders);
+
+        var budget = getBudget(balance(0, 0), balance(0, 0));
+        var newOrders = budgetOrders([], budget);
+        assert.deepEqual(newOrders, []);
     });
 });
 
@@ -368,32 +404,19 @@ describe('sortOrders', function() {
 
 describe('getBudget', function() {
     it('should compute a simple budget', function() {
-        var budget = getBudget({quantity: 1, value: 1000}, {quantity: 1, value: 0});
-        assert.equal(budget.quantity.toNumber(), 1);
-        assert.equal(budget.value.toNumber(), 0);
-
-        var budget = getBudget({quantity: 1, value: 1000}, {quantity: 1, value: 1000});
-        assert.equal(budget.quantity.toNumber(), 1);
-        assert.equal(budget.value.toNumber(), 1000);
-
-        var budget = getBudget({quantity: 1, value: 1000}, {quantity: 0.5, value: 2000});
-        assert.equal(budget.quantity.toNumber(), 0.5);
-        assert.equal(budget.value.toNumber(), 1000);
+        var budget = getBudget({quantity: 1, value: 1000}, {quantity: 2, value: 0});
+        assert.equal(budget['ASK'].quantity.toNumber(), 1);
+        assert.equal(budget['ASK'].value.toNumber(), 0);
+        assert.equal(budget['BID'].quantity.toNumber(), 2);
+        assert.equal(budget['BID'].value.toNumber(), 1000);
     });
 
     it('should account for premiums', function() {
-        var budget = getBudget({quantity: 1, value: 1000}, {quantity: 1, value: 0}, 2);
-        assert.equal(budget.quantity.toNumber(), 1);
-        assert.equal(budget.value.toNumber(), 0);
-
-        var budget = getBudget({quantity: 1, value: 1000}, {quantity: 1, value: 500}, 2);
-        assert.equal(budget.quantity.toNumber(), 1);
-        assert.equal(budget.value.toNumber(), 500);
-
-        // $1000 on origin is worth $2000 on remote with x2 premium.
-        var budget = getBudget({quantity: 1, value: 1000}, {quantity: 1, value: 3000}, 2);
-        assert.equal(budget.quantity.toNumber(), 1);
-        assert.equal(budget.value.toNumber(), 2000);
+        var budget = getBudget({quantity: 1, value: 1000}, {quantity: 2, value: 1000}, 2);
+        assert.equal(budget['ASK'].quantity.toNumber(), 1);
+        assert.equal(budget['ASK'].value.toNumber(), 1000);
+        assert.equal(budget['BID'].quantity.toNumber(), 2);
+        assert.equal(budget['BID'].value.toNumber(), 2000);
     });
 });
 
@@ -428,7 +451,7 @@ describe('getSpread', function() {
         var spread = getSpread([
             new Order(null, 'ASK', '1.000', '101.000'),
             new Order(null, 'ASK', '1.000', '104.000'),
-            new Order(null, 'ASK', '1.000', '106.000'),
+            new Order(null, 'ASK', '1.000', '106.000')
         ]);
 
         assert.deepEqual(spread, {
