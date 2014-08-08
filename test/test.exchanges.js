@@ -185,5 +185,15 @@ describe('Exchanges', function() {
             assert.equal(order.quantity, 1.142);
             assert.equal(order.rate, 585.30);
         });
+
+        it('should convert errors', function() {
+            // Bitstamp gives 200 responses with fun errors like this.
+            var r = {"error": {"price": ["Ensure that there are no more than 7 digits in total."]}};
+            var err = BitstampExchange.toError(r);
+            assert.equal(err.message, 'price: Ensure that there are no more than 7 digits in total.');
+
+            var err = BitstampExchange.toError({'error': {}, 'object': {'id': '1234'}});
+            assert.equal(err, null);
+        });
     });
 });
