@@ -68,11 +68,17 @@ if (program.email) {
 var bot = Bot.fromConfig(program);
 
 // Register signal handlers for graceful shutdown.
-var gracefulShutdown = function() {
+var gracefulShutdown = function(err) {
     logger.warn('Shutdown signal caught. Attempting to stop gracefully...');
     bot.stop();
+
+    if (err) {
+        logger.alert('Unexpected error triggered shutdown: %s\n', err.message, err.stack);
+    }
 };
 process.on('SIGINT', gracefulShutdown);
+process.on('uncaughtException', gracefulShutdown);
+// TODO: Use nodejs domains for more resilient error handling? http://nodejs.org/api/domain.html
 
 
 // Start trading.
