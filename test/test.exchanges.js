@@ -113,6 +113,10 @@ describe('Exchanges', function() {
             assert.equal(o.type, 'ASK');
             assert.equal(o.quantity, 35);
             assert.equal(o.rate, 1);
+
+            var o = BitmeExchange.toOrder(sampleOrders[1], true);
+            assert.equal(o.quantity, 40);
+            assert.equal(o.rate, 1);
         });
 
         var sampleAccounts = [
