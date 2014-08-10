@@ -22,5 +22,8 @@
   },
   "scripts": {
     "test": "mocha -R spec ./test"
+  },
+  "bin": {
+    "liquid" : "./liquid"
   }
 }
