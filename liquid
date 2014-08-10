@@ -39,6 +39,7 @@ program
     .option('--maxOrders <value>', 'Maximum number of orders to maintain on the origin exchange.', parseInt)
     .option('--stopAfter <count>', 'Stop after there have been this many pending trades on the remote exchange.', parseInt)
     .option('--email [address]', 'Send alert-level logs to this email address.')
+    .option('--logfile <path>', 'Write debug-level JSON logs to this file.')
     .option('-v, --verbosity [level]', 'Set logging level verbosity (warn, info, debug). [info]')
     .on('--help', printApiKeys);
 
@@ -59,9 +60,18 @@ if (program.email) {
     // TODO: Expose more of this configuration?
     var emailOptions = {
         to: program.email,
+        host: process.env.MAILHOST || 'localhost',
         level: 'alert'
     };
     logger.add(logger.transports.Mail, emailOptions);
+}
+
+// Setup logfile?
+if (program.logfile) {
+    logger.add(logger.transports.File, {
+        filename: program.logfile,
+        level: 'debug'
+    });
 }
 
 
