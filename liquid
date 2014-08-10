@@ -31,16 +31,16 @@ var printApiKeys = function() {
 
 program
     .version(pkg.version)
+    .option('-v, --verbosity [level]', 'Set logging level verbosity (warn, info, debug). [info]')
     .option('--LIVE', 'Use real APIs, instead of DummyExchanges.')
-    .option('--resetOnly', 'Start and shutdown immediately after reset.')
     .option('--pretend', '(When live) Don\'t send trades, only print them.')
     .option('--premium <multiplier>', 'Multiplier to apply over remote exchange prices.', parseFloat)
     .option('--minValue <value>', 'Aggregate orders until their total value exceeds this.', parseFloat)
     .option('--maxOrders <value>', 'Maximum number of orders to maintain on the origin exchange.', parseInt)
+    .option('--resetOnly', 'Start and shutdown immediately after reset.')
     .option('--stopAfter <count>', 'Stop after there have been this many pending trades on the remote exchange.', parseInt)
     .option('--email [address]', 'Send alert-level logs to this email address.')
     .option('--logfile <path>', 'Write debug-level JSON logs to this file.')
-    .option('-v, --verbosity [level]', 'Set logging level verbosity (warn, info, debug). [info]')
     .on('--help', printApiKeys);
 
 program.parse(process.argv);
