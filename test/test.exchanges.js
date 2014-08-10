@@ -240,7 +240,10 @@ describe('Exchanges', function() {
             assert.equal(err.message, 'price: Ensure that there are no more than 7 digits in total.');
 
             var err = BitstampExchange.toError({'error': {}, 'object': {'id': '1234'}});
-            assert.equal(err, null);
+
+            var r = {"error": "Just a simple error"};
+            var err = BitstampExchange.toError(r);
+            assert.equal(err.message, 'Just a simple error');
         });
     });
 });
