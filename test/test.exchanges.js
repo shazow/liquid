@@ -136,6 +136,53 @@ describe('Exchanges', function() {
             assert.equal(balance.value, sampleAccounts[1].available);
             assert.equal(balance.quantity, sampleAccounts[0].available);
         });
+
+
+        var sampleTransactions = [
+            {
+                id: '56229',
+                transaction_type_cd: 'DEBIT',
+                transaction_category_cd: 'ORDER_ESCROW',
+                currency_cd: 'BTC',
+                amount: '0.10000000000000000000',
+                transaction_status_cd: 'CLEARED',
+                created: '2014-08-09T03:27:00.021Z',
+                cleared: '2014-08-09T03:27:00.021Z'
+            },
+            {
+                id: '56267',
+                transaction_type_cd: 'CREDIT',
+                transaction_category_cd: 'ORDER_ESCROW',
+                currency_cd: 'BTC',
+                amount: '0.10000000000000000000',
+                transaction_status_cd: 'PENDING',
+                created: '2014-08-09T04:25:14.879Z',
+                cleared: null
+            }
+        ];
+
+        it('should convert transactions', function() {
+            var t = BitmeExchange.toTransaction(sampleTransactions[0]);
+            assert.equal(t.quantity, 0.1);
+            assert.equal(t.type, 'ASK');
+
+            var fakeSpread = {
+                'bid': 123,
+                'ask': 234
+            };
+            var o = t.toOrder(fakeSpread, true);
+            assert.equal(o.type, 'BID');
+            assert.equal(o.rate, 123);
+            assert.equal(o.quantity, 0.1);
+
+            var t = BitmeExchange.toTransaction(sampleTransactions[1]);
+            assert.equal(t.quantity, 0.1);
+            assert.equal(t.type, 'BID');
+
+            var placedOrders = [t.toOrder(fakeSpread)];
+            var t = BitmeExchange.toTransaction(sampleTransactions[1], placedOrders);
+            assert.equal(t, undefined);
+        });
     });
 
 
