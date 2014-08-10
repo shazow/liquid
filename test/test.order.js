@@ -207,7 +207,7 @@ describe('budgetOrders', function() {
             new Order(null, 'ASK', '1.500', '550'),
             new Order(null, 'ASK', '3.000', '600'),
             new Order(null, 'ASK', '1.000', '610'),
-            new Order(null, 'ASK', '0.001', '600'),
+            new Order(null, 'ASK', '0.001', '620'),
             new Order(null, 'BID', '1.000', '400'),
             new Order(null, 'BID', '1.000', '415'),
             new Order(null, 'BID', '2.000', '450'),
@@ -218,7 +218,7 @@ describe('budgetOrders', function() {
         var expectedOrders = [
             new Order(null, 'ASK', '0.500', '500'),
             new Order(null, 'ASK', '1.500', '550'),
-            new Order(null, 'ASK', '0.001', '600'),
+            new Order(null, 'ASK', '0.001', '620'),
             new Order(null, 'BID', '1.000', '400'),
             new Order(null, 'BID', '1.000', '415'),
             new Order(null, 'BID', '0.001', '450')
@@ -226,6 +226,73 @@ describe('budgetOrders', function() {
 
         var budget = getBudget(balance(3, 1200), balance(3, 1200));
         var newOrders = budgetOrders(orders, budget);
+        assert.deepEqual(newOrders, expectedOrders);
+    });
+
+    it('should fit partial orders', function() {
+        var budget = getBudget(balance(3, 1200), balance(3, 1200));
+
+        // Partial by value
+        var newOrders = budgetOrders([
+            new Order(null, 'ASK', '0.500', '1000'),
+            new Order(null, 'ASK', '1.500', '1000'),
+        ], budget, 0);
+        assert.deepEqual(newOrders, [
+            new Order(null, 'ASK', '0.500', '1000'),
+            new Order(null, 'ASK', '0.700', '1000')
+        ]);
+
+        // Obey minOrder
+        var newOrders = budgetOrders([
+            new Order(null, 'ASK', '0.500', '1000'),
+            new Order(null, 'ASK', '1.500', '1000'),
+        ], budget, 600);
+        assert.deepEqual(newOrders, [
+            new Order(null, 'ASK', '1.2', '1000')
+        ]);
+
+        // Partial by quantity
+        var newOrders = budgetOrders([
+            new Order(null, 'ASK', '0.500', '100'),
+            new Order(null, 'ASK', '3.000', '100'),
+        ], budget, 0);
+        assert.deepEqual(newOrders, [
+            new Order(null, 'ASK', '0.500', '100'),
+            new Order(null, 'ASK', '2.500', '100')
+        ]);
+
+        // Obey minOrder
+        var newOrders = budgetOrders([
+            new Order(null, 'ASK', '0.500', '100'),
+            new Order(null, 'ASK', '3.000', '100'),
+        ], budget, 200);
+        assert.deepEqual(newOrders, [
+            new Order(null, 'ASK', '3', '100')
+        ]);
+
+        var orders = [
+            new Order(null, 'ASK', '0.500', '500'),
+            new Order(null, 'ASK', '1.500', '550'),
+            new Order(null, 'ASK', '3.000', '600'),
+            new Order(null, 'ASK', '1.000', '610'),
+            new Order(null, 'ASK', '0.001', '620'),
+            new Order(null, 'BID', '1.000', '400'),
+            new Order(null, 'BID', '1.000', '415'),
+            new Order(null, 'BID', '2.000', '450'),
+            new Order(null, 'BID', '2.000', '450'),
+            new Order(null, 'BID', '0.001', '450')
+        ];
+
+        var expectedOrders = [
+            new Order(null, 'ASK', '0.500', '500'),
+            new Order(null, 'ASK', '1.500', '550'),
+            new Order(null, 'ASK', BigNumber(1200-250-550*1.5).dividedBy(600), '600'),
+            new Order(null, 'BID', '1.000', '400'),
+            new Order(null, 'BID', '1.000', '415'),
+            new Order(null, 'BID', BigNumber(1200-400-415).dividedBy(450), '450')
+        ];
+
+        var newOrders = budgetOrders(orders, budget, 0);
         assert.deepEqual(newOrders, expectedOrders);
     });
 
