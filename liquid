@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 
-var pkg = require('./package.json'),
-    program = require('commander'),
+var program = require('commander');
+
+var logger = require('./lib/logger.js'),
+    pkg = require('./package.json'),
     Bot = require('./lib/bot.js').Bot;
-    logger = require('./lib/logger.js');
 
 
 // Inject API keys from environment variables.
