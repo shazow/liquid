@@ -248,3 +248,7 @@ orderbook needs to be updated:
 Further, there several more helpers used to get the spread from a list of
 orders, sort orders by spread, compute the total value of a list of orders, and
 get the budget to be used with `aggregateOrders`.
+
+
+All of these pieces are generally well-tested, so don't forget to check the
+tests for examples on how they can be used independently or together.
