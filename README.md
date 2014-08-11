@@ -25,7 +25,7 @@ Run the tests:
 $ npm test
 ...
 
-1 passing (10ms)
+42 passing (35ms)
 ```
 
 
@@ -100,16 +100,151 @@ info:    Bot started.
 ```
 
 
-## Research
+## Components
 
-### Codebases to consider
+### Bot
 
-We'll be learning from these codebases to find non-obvious edge cases that need to be covered.
-* https://github.com/maxme/bitcoin-arbitrage (Python)
-* https://github.com/hstove/rbtc_arbitrage (Ruby)
-* https://github.com/skier31415/BTC-Arby (Python)
-* https://code.google.com/p/ga-bitbot/source/browse (Python)
-* https://github.com/rokj/bitcoin_dealer (Python)
-* https://github.com/mathisonian/benjamin (Node.js)
-* https://github.com/pulsecat/cryptrade (CoffeeScript+Node.js)
-* Others?
+The bot is the glue that controls trading between the exchanges and maintains
+state.
+
+```javascript
+var Bot = require('./lib/bot.js').Bot;
+
+var bot = new Bot(bitmeExchange, bitstampExchange);
+```
+
+It's instantiated with an `originExchange`, a `remoteExchange`, and some other
+options as configured by the command-line argument parser. The origin exchange
+is *our* exchange that we're mirroring into. The remote exchange is the exchange
+we're mirroring *from*.
+
+The bot will pull orderbook updates from the remote exchange and keep the origin
+exchange in sync with every tick. If it notices that one of the origin orders
+disappears, it will treat that as a completed trade and will create a reciprocal
+trade on the remote exchange.
+
+```javascript
+bot.start(callback);
+```
+
+When the bot is started, it will prepare each of the exchanges by calling
+`exchange.ready(callback)` on them, and then it will implicitly call
+`bot.reset(callback)` to reset the trading into a safe state--in case it wasn't
+shut down properly.  This mostly means clearing all of the active origin trades
+so that we can start synchronizing the origin trades ourselves.
+
+The bot is notified of trades from exchanges by subscribing to events on them.
+
+```javascript
+bot.stop(callback);
+```
+
+When stopping conditions are reached (such as `stopAfter` count) or an error
+occurs, the bot will attempt to shut down gracefully by calling
+`exchange.cleanup(callback)` on each exchange, removing the event subscroptions.
+
+Finally, the bot will again implicitly call `bot.reset(callback)` and attempt to
+reach a safe shutdown state.
+
+
+### Exchange
+
+We abstract exchange APIs by extending the `BaseExchange` which provides a
+common interface for our `Bot` to work with. An exchange implementation is an
+event emitter which emits `trade` (our placed order is executed) and `orderbook`
+(exchange orderbook has been updated) events.
+
+```javascript
+var DummyExchange = require('./lib/exchanges/dummy.js').DummyExchange;
+
+var exchange = new DummyExchange('FakeExchange');
+```
+
+A `DummyExchange` is provided which fakes trades by maintaining its own state
+in-memory.
+
+```javascript
+exchange.ready(callback);
+```
+
+The exchange is responsible for loading its state and setting up any
+authentication or websockets during the ready phase.
+
+```javascript
+exchange.placeOrders(orders, callback);
+
+var newOrders = exchange.getOrders();
+exchange.cancelOrders(newOrders, callback);
+```
+
+It provides functions for placing and deleting orders in bulk, and it keeps
+track of placed orders and the exchange balance.
+
+```javascript
+exchange.cleanup(callback);
+```
+
+To achieve a graceful shutdown, the exchange must clean up after itself. This
+means unsubscribing from any websockets and clearing any interval timers. It may
+also attempt to push through any pending orders before shutting down.
+
+```javascript
+var BitmeExchange = require('./lib/exchanges/bitme.js').BitmeExchange;
+
+var exchange = BitmeExchange.fromConfig({
+    apiKeys: {
+        BITME_KEY: '...',
+        BITME_SECRET: '...',
+    },
+    tickDelay: 1000,
+    pretend: true
+});
+```
+
+When exchanges are loaded by the command-line argument parser, they're
+instantiated using a static helper which knows how to parse the various
+command-line options.
+
+To use real exchanges but avoid making real trades, we can start them with
+`pretend: true` which will skip making API calls whenever `placeOrders` and
+`cancelOrders` is called, and instead print an `INFO` log and pretend that
+orders were successful.
+
+
+### Order module
+
+Along with the main class representation of an `Order`, the core logic of
+dealing with orders lives inside of the order module.
+
+```javascript
+var order = require('./lib/order.js');
+
+var bid = new order.Order(null, 'BID', 1, 500);
+```
+
+The `Order` class should be treated as immutable, and any mutations can be done
+by cloning it.
+
+```javascript
+var ask = bid.clone({}, /* premium */ 1.05, /* invertType */ true);
+```
+
+Clone will override any fields we pass, but it can also apply a premium and
+invert the type at the same time--a very common operation when trading back and
+forth.
+
+There are several important utilities used primarily by the bot whenever the
+orderbook needs to be updated:
+- `order.diffOrders(oldOrders, newOrders, ...)` is used for detecting when the orderbook has changed.
+- `order.aggregateOrders(orders, minValue, ...)` is used to combine smaller orders into
+  fewer larger orders.
+- `order.budgetOrders(orders, budget, ...)` is used to prune aggregated orders
+  into a subset which will fit in our budget. It will even replace the final
+  oversized order with a smaller equivalent order that fits within the budget.
+- `order.patchOrders(placedOrders, newOrders)` is used to get instructions to
+  update our placed orders with an updated set of orders using the fewest
+  possible operations.
+
+Further, there several more helpers used to get the spread from a list of
+orders, sort orders by spread, compute the total value of a list of orders, and
+get the budget to be used with `aggregateOrders`.
