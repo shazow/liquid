@@ -7,7 +7,7 @@ var logger = require('./lib/logger.js'),
     Bot = require('./lib/bot.js').Bot;
 
 
-// Inject API keys from environment variables.
+// Inject variables from environment.
 program.apiKeys = {
     'BITSTAMP_CLIENT_ID': process.env.BITSTAMP_CLIENT_ID,
     'BITSTAMP_KEY': process.env.BITSTAMP_KEY,
@@ -15,19 +15,31 @@ program.apiKeys = {
     'BITME_KEY': process.env.BITME_KEY,
     'BITME_SECRET': process.env.BITME_SECRET
 }
+program.env = {
+    'MAILHOST': process.env.MAILHOST,
+    'BITME_STAGING_SERVER': process.env.BITME_STAGING_SERVER
+};
 
 
-var printApiKeys = function() {
-    // Print API key instructions
-    console.log('  API keys loaded from environment variables:\n');
-
-    for (var key in program.apiKeys) {
-        var bullet = program.apiKeys[key] ? '✓' : '✖';
+var printEnvKeys = function(d) {
+    for (var key in d) {
+        var bullet = d[key] ? '✓' : '✖';
         console.log('    ' + bullet + ' ' + key);
     }
+};
 
+
+var extraHelp = function() {
+    // Print API key instructions
+    console.log('  API keys loaded from environment variables:\n');
+    printEnvKeys(program.apiKeys);
+    console.log('');
+
+    console.log('  Additional environment variables:\n');
+    printEnvKeys(program.env);
     console.log('');
 };
+
 
 program
     .version(pkg.version)
@@ -41,7 +53,7 @@ program
     .option('--stopAfter <count>', 'Stop after there have been this many pending trades on the remote exchange.', parseInt)
     .option('--email [address]', 'Send alert-level logs to this email address.')
     .option('--logfile <path>', 'Write debug-level JSON logs to this file.')
-    .on('--help', printApiKeys);
+    .on('--help', extraHelp);
 
 program.parse(process.argv);
 
@@ -55,16 +67,6 @@ if (level === true) {  // true gets translated to 'debug'
 }
 logger.level = level;
 
-// Install email transport for winston?
-if (program.email) {
-    // TODO: Expose more of this configuration?
-    var emailOptions = {
-        to: program.email,
-        host: process.env.MAILHOST || 'localhost',
-        level: 'alert'
-    };
-    logger.add(logger.transports.Mail, emailOptions);
-}
 
 // Setup logfile?
 if (program.logfile) {
@@ -72,6 +74,19 @@ if (program.logfile) {
         filename: program.logfile,
         level: 'debug'
     });
+}
+
+
+// Install email transport for winston?
+if (program.email) {
+    // TODO: Expose more of this configuration?
+    var emailOptions = {
+        to: program.email,
+        host: program.env.MAILHOST || 'localhost',
+        level: 'alert'
+    };
+    logger.add(logger.transports.Mail, emailOptions);
+    logger.debug('Configured alert emails:', emailOptions);
 }
 
 
