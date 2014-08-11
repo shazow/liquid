@@ -336,7 +336,7 @@ describe('budgetOrders', function() {
         assert.deepEqual(r, [orders[1], orders[2]]);
 
         // x2 premium
-        var budget = getBudget(balance(0, 475/2), balance(2, 0), 2.0);
+        var budget = getBudget(balance(0, 475), balance(2, 0), 2.0);
         var r = budgetOrders(orders, budget);
         assert.deepEqual(r, [orders[1]]);
 
@@ -490,9 +490,9 @@ describe('getBudget', function() {
     it('should account for premiums', function() {
         var budget = getBudget({quantity: 1, value: 1000}, {quantity: 2, value: 1000}, 2);
         assert.equal(budget['ASK'].quantity.toNumber(), 1);
-        assert.equal(budget['ASK'].value.toNumber(), 1000);
+        assert.equal(budget['ASK'].value.toNumber(), 2000);
         assert.equal(budget['BID'].quantity.toNumber(), 2);
-        assert.equal(budget['BID'].value.toNumber(), 2000);
+        assert.equal(budget['BID'].value.toNumber(), 1000);
     });
 });
 
