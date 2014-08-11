@@ -270,6 +270,15 @@ describe('budgetOrders', function() {
             new Order(null, 'ASK', '3', '100')
         ]);
 
+        var newOrders = budgetOrders([
+            new Order(null, 'ASK', '50', '1000'),
+            new Order(null, 'BID', '50', '1000')
+        ], budget, 0);
+        assert.deepEqual(newOrders, [
+            new Order(null, 'ASK', '1.2', '1000'),
+            new Order(null, 'BID', '1.2', '1000')
+        ]);
+
         var orders = [
             new Order(null, 'ASK', '0.500', '500'),
             new Order(null, 'ASK', '1.500', '550'),
