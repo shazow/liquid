@@ -17,6 +17,8 @@ program.apiKeys = {
 }
 program.env = {
     'MAILHOST': process.env.MAILHOST,
+    'MAILPORT': process.env.MAILPORT,
+    'MAILFROM': process.env.MAILFROM,
     'BITME_STAGING_SERVER': process.env.BITME_STAGING_SERVER
 };
 
@@ -82,7 +84,9 @@ if (program.email) {
     // TODO: Expose more of this configuration?
     var emailOptions = {
         to: program.email,
+        from: program.env.MAILFROM || 'liquid',
         host: program.env.MAILHOST || 'localhost',
+        port: program.env.MAILPORT || 25,
         level: 'alert'
     };
     logger.add(logger.transports.Mail, emailOptions);
