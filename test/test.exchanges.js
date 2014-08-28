@@ -141,6 +141,12 @@ describe('Exchanges', function() {
             assert.equal(balance.quantity, sampleAccounts[0].available);
         });
 
+        it('should handle none/missing accounts', function() {
+           var accounts = [];
+           var balance = BitmeExchange.toBalance(accounts);
+           assert.equal(balance.value, '0.00000000000000000000');
+           assert.equal(balance.quantity, '0.00000000000000000000');
+        });
 
         var sampleTransactions = [
             {
