@@ -53,6 +53,7 @@ program
     .option('--maxOrders <value>', 'Maximum number of orders to maintain on the origin exchange.', parseInt)
     .option('--resetOnly', 'Start and shutdown immediately after reset.')
     .option('--stopAfter <count>', 'Stop after there have been this many pending trades on the remote exchange.', parseInt)
+    .option('--progressInterval <ms>', 'INFO log bot progress at interval instead of per matched trade. (0 to disable)')
     .option('--email [address]', 'Send alert-level logs to this email address.')
     .option('--logfile <path>', 'Write debug-level JSON logs to this file.')
     .on('--help', extraHelp);
