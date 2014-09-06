@@ -414,6 +414,36 @@ describe('patchOrders', function() {
 
         assert.deepEqual(instructions.place, []);
     });
+
+    it('should tolerate changes within our threshold', function() {
+        var instructions = patchOrders([
+            new Order(null, 'BID', '2.0', '300')
+        ], [
+            new Order(null, 'ASK', '2.0', '250'),
+            new Order(null, 'BID', '2.0', '330')
+        ], 0.05);
+
+        assert.deepEqual(instructions.place, [
+            new Order(null, 'ASK', '2.0', '250'),
+            new Order(null, 'BID', '2.0', '330')
+        ]);
+
+        assert.deepEqual(instructions.cancel, [
+            new Order(null, 'BID', '2.0', '300')
+        ]);
+
+        var instructions = patchOrders([
+            new Order(null, 'BID', '2.0', '300')
+        ], [
+            new Order(null, 'ASK', '2.0', '250'),
+            new Order(null, 'BID', '2.0', '330')
+        ], 0.1);
+
+        assert.deepEqual(instructions.place, [
+            new Order(null, 'ASK', '2.0', '250')
+        ]);
+        assert.deepEqual(instructions.cancel, []);
+    });
 });
 
 
