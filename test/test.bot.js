@@ -2,7 +2,7 @@ var assert = require('assert'),
     async = require('async'),
     DummyExchange = require('../lib/exchanges/dummy.js').DummyExchange;
     Bot = require('../lib/bot.js').Bot;
-    SampleHistory = require('../lib/bot.js').SampleHistory;
+    SampleHistory = require('../lib/bot.js').SampleHistory,
     Order = require('../lib/order.js').Order,
     totalValue = require('../lib/order.js').totalValue,
     logger = require('../lib/logger.js');
@@ -196,9 +196,9 @@ describe('SampleHistory', function() {
         var h = new SampleHistory(5, 0, 5);
         [500, 510, 505, 480, 530].forEach(h.add.bind(h));
 
-        assert(!h.isDeviant(506, 0.1));
-        assert(h.isDeviant(506, 0));
-        assert(h.isDeviant(556, 0.1));
+        assert(h.getVariance(506) < 0.1);
+        assert(h.getVariance(506) > 0);
+        assert(h.getVariance(556) > 0.1);
     });
 });
 
