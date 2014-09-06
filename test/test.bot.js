@@ -2,6 +2,7 @@ var assert = require('assert'),
     async = require('async'),
     DummyExchange = require('../lib/exchanges/dummy.js').DummyExchange;
     Bot = require('../lib/bot.js').Bot;
+    SampleHistory = require('../lib/bot.js').SampleHistory;
     Order = require('../lib/order.js').Order,
     totalValue = require('../lib/order.js').totalValue,
     logger = require('../lib/logger.js');
@@ -154,3 +155,50 @@ describe('Bot', function() {
         });
     });
 });
+
+
+describe('SampleHistory', function() {
+    logger.level = 'error';
+
+    it('should compute rolling average subset', function() {
+        var h = new SampleHistory(4, 0, 2);
+        assert.equal(h.rollingNum, 2);
+
+        h.add(2);
+        assert.deepEqual(h.history, [2]);
+        assert.equal(h.rollingSum, 2);
+
+        h.add(4);
+        assert.equal(h.rollingSum, 6);
+
+        h.add(6);
+        assert.equal(h.rollingSum, 6);
+
+        h.add(8);
+        assert.equal(h.rollingSum, 6);
+
+        h.add(10);
+        assert.equal(h.rollingSum, 10);
+        assert.deepEqual(h.history, [4, 6, 8, 10]);
+
+        assert.equal(h.pop(), 4);
+        assert.deepEqual(h.history, [6, 8, 10]);
+        assert.equal(h.rollingSum, 14);
+
+        assert.equal(h.pop(), 6);
+        assert.equal(h.rollingSum, 18);
+
+        h.pop(); h.pop();
+        assert.equal(h.rollingSum, 0);
+    });
+
+    it('should detect deviant values', function() {
+        var h = new SampleHistory(5, 0, 5);
+        [500, 510, 505, 480, 530].forEach(h.add.bind(h));
+
+        assert(!h.isDeviant(506, 0.1));
+        assert(h.isDeviant(506, 0));
+        assert(h.isDeviant(556, 0.1));
+    });
+});
+
