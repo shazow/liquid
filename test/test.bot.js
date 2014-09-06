@@ -164,37 +164,37 @@ describe('SampleHistory', function() {
         var h = new SampleHistory(4, 0, 2);
         assert.equal(h.rollingNum, 2);
 
-        h.add(2);
+        h.push(2);
         assert.deepEqual(h.history, [2]);
         assert.equal(h.rollingSum, 2);
 
-        h.add(4);
+        h.push(4);
         assert.equal(h.rollingSum, 6);
 
-        h.add(6);
+        h.push(6);
         assert.equal(h.rollingSum, 6);
 
-        h.add(8);
+        h.push(8);
         assert.equal(h.rollingSum, 6);
 
-        h.add(10);
+        h.push(10);
         assert.equal(h.rollingSum, 10);
         assert.deepEqual(h.history, [4, 6, 8, 10]);
 
-        assert.equal(h.pop(), 4);
+        assert.equal(h.shift(), 4);
         assert.deepEqual(h.history, [6, 8, 10]);
         assert.equal(h.rollingSum, 14);
 
-        assert.equal(h.pop(), 6);
+        assert.equal(h.shift(), 6);
         assert.equal(h.rollingSum, 18);
 
-        h.pop(); h.pop();
+        h.shift(); h.shift();
         assert.equal(h.rollingSum, 0);
     });
 
     it('should detect deviant values', function() {
         var h = new SampleHistory(5, 0, 5);
-        [500, 510, 505, 480, 530].forEach(h.add.bind(h));
+        [500, 510, 505, 480, 530].forEach(h.push.bind(h));
 
         assert(h.getVariance(506) < 0.1);
         assert(h.getVariance(506) > 0);
