@@ -52,12 +52,25 @@ describe('Order', function() {
 
     it('should compare to other orders', function() {
         var o = new Order(null, 'ASK', '1', '100');
+        assert.equal(o.comparedTo(o), 0);
         assert.equal(o.comparedTo(new Order(null, 'ASK', '1', '100')), 0);
         assert.equal(o.comparedTo(new Order(null, 'ASK', '1', '95')), 1);
         assert.equal(o.comparedTo(new Order(null, 'ASK', '1', '105')), -1);
         assert.equal(o.comparedTo(new Order(null, 'BID', '1', '100')), 1);
         assert.equal(o.comparedTo(new Order(null, 'ASK', '2', '100')), -1);
         assert.equal(o.comparedTo(new Order(null, 'ASK', '0.5', '100')), 1);
+    });
+
+
+    it('should be similar to other orders', function() {
+        var o = new Order(null, 'ASK', '1.123456789', '100.123456789');
+        assert.equal(o.similarTo(o), 0);
+        assert.equal(o.similarTo(new Order(null, 'ASK', '1.123456789', '100.123456789')), 0);
+        assert.equal(o.similarTo(new Order(null, 'ASK', '1.1234568', '100.123')), 0);
+        assert.equal(o.similarTo(new Order(null, 'ASK', '1.1234568', '100.1')), 0);
+        assert.equal(o.similarTo(new Order(null, 'ASK', '1', '95')), 1);
+        assert.equal(o.similarTo(new Order(null, 'ASK', '1', '105')), -1);
+        assert.equal(o.similarTo(new Order(null, 'BID', '1.1234568', '100.1')), 1);
     });
 });
 
