@@ -49,6 +49,7 @@ program
     .option('--LIVE', 'Use real APIs, instead of DummyExchanges.')
     .option('--pretend', '(When live) Don\'t send trades, only print them.')
     .option('--premium <multiplier>', 'Multiplier to apply over remote exchange prices. (1.1 -> 10% premium, 0.9 -> 10% discount)', parseFloat)
+    .option('--tolerance <change>', 'Tolerance of relative change of order value. (0.1 -> 10% relative change)', parseFloat)
     .option('--minValue <value>', 'Aggregate orders until their total value exceeds this.', parseFloat)
     .option('--maxOrders <value>', 'Maximum number of orders to maintain on the origin exchange.', parseInt)
     .option('--maxVolatility <change>', 'Abort if market prices exceed the delayed rolling average. (0.1 -> 10% relative change)', parseFloat)

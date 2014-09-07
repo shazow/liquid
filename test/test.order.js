@@ -4,6 +4,7 @@ var assert = require('assert'),
     patchOrders = require('../lib/order.js').patchOrders,
     diffOrders = require('../lib/order.js').diffOrders,
     sortOrders = require('../lib/order.js').sortOrders,
+    sortOrdersByValue = require('../lib/order.js').sortOrdersByValue,
     getSpread = require('../lib/order.js').getSpread,
     getBudget = require('../lib/order.js').getBudget,
     aggregateOrders = require('../lib/order.js').aggregateOrders,
@@ -414,6 +415,43 @@ describe('patchOrders', function() {
 
         assert.deepEqual(instructions.place, []);
     });
+
+    it('should not tolerate changes under threshold', function() {
+        var instructions = patchOrders([
+            new Order(null, 'BID', '2.0', '300'),
+            new Order(null, 'BID', '3.0', '302')
+        ], [
+            new Order(null, 'ASK', '2.0', '250'),
+            new Order(null, 'BID', '3.0', '305'),
+            new Order(null, 'BID', '2.0', '325')
+        ], 0.05);
+
+        assert.deepEqual(instructions.place, [
+            new Order(null, 'ASK', '2.0', '250'),
+            new Order(null, 'BID', '2.0', '325')
+        ]);
+
+        assert.deepEqual(instructions.cancel, [
+            new Order(null, 'BID', '2.0', '300')
+        ]);
+    });
+
+    it('should tolerate changes within threshold', function() {
+        var instructions = patchOrders([
+            new Order(null, 'BID', '2.0', '300'),
+            new Order(null, 'BID', '3.0', '302')
+        ], [
+            new Order(null, 'ASK', '2.0', '250'),
+            new Order(null, 'BID', '3.0', '305'),
+            new Order(null, 'BID', '2.0', '325')
+        ], 0.1);
+
+        console.log('place:', instructions.place.map(String), 'cancel:', instructions.cancel.map(String));
+        assert.deepEqual(instructions.place, [
+            new Order(null, 'ASK', '2.0', '250')
+        ]);
+        assert.deepEqual(instructions.cancel, []);
+    });
 });
 
 
@@ -473,6 +511,43 @@ describe('sortOrders', function() {
             new Order(null, 'ASK', '1.000', '30.000'),
             new Order(null, 'BID', '1.000', '40.000'),
             new Order(null, 'ASK', '1.000', '40.000')
+        ]);
+    });
+});
+
+
+describe('sortOrdersByValue', function() {
+    it('should sort orders by value first, then normal sort', function() {
+        assert.deepEqual(sortOrdersByValue([
+            new Order(null, 'ASK', '1.000', '60.000'),
+            new Order(null, 'ASK', '1.000', '30.000'),
+            new Order(null, 'BID', '1.000', '40.000'),
+            new Order(null, 'BID', '1.000', '20.000')
+        ]), [
+            new Order(null, 'BID', '1.000', '20.000'),
+            new Order(null, 'ASK', '1.000', '30.000'),
+            new Order(null, 'BID', '1.000', '40.000'),
+            new Order(null, 'ASK', '1.000', '60.000')
+        ]);
+
+        assert.deepEqual(r = sortOrdersByValue([
+            new Order(null, 'ASK', '1.000', '60.000'),
+            new Order(null, 'ASK', '1.000', '30.000'),
+            new Order(null, 'BID', '1.000', '40.000'),
+            new Order(null, 'BID', '1.000', '20.000'),
+            new Order(null, 'ASK', '2.000', '30.000'),
+            new Order(null, 'ASK', '2.000', '15.000'),
+            new Order(null, 'BID', '2.000', '20.000'),
+            new Order(null, 'BID', '2.000', '10.000')
+        ]), [
+            new Order(null, 'BID', '2.000', '10.000'),
+            new Order(null, 'BID', '1.000', '20.000'),
+            new Order(null, 'ASK', '2.000', '15.000'),
+            new Order(null, 'ASK', '1.000', '30.000'),
+            new Order(null, 'BID', '2.000', '20.000'),
+            new Order(null, 'BID', '1.000', '40.000'),
+            new Order(null, 'ASK', '2.000', '30.000'),
+            new Order(null, 'ASK', '1.000', '60.000')
         ]);
     });
 });
