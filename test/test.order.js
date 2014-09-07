@@ -446,7 +446,6 @@ describe('patchOrders', function() {
             new Order(null, 'BID', '2.0', '325')
         ], 0.1);
 
-        console.log('place:', instructions.place.map(String), 'cancel:', instructions.cancel.map(String));
         assert.deepEqual(instructions.place, [
             new Order(null, 'ASK', '2.0', '250')
         ]);
