@@ -78,6 +78,28 @@ describe('Exchanges', function() {
             assert.equal(exchange.balance.value.toNumber(), 1000);
         });
 
+        it('should track resources', function() {
+            var exchange = new DummyExchange();
+
+            var lock = exchange.resources.acquire('orders');
+            assert(lock);
+
+            var lock = exchange.resources.acquire('orders');
+            assert(lock);
+
+            var lock = exchange.resources.acquire('orders', true /* exclusive */);
+            assert(!lock);
+            assert.equal(exchange.resources.using('orders'), 2);
+
+            var lock = exchange.resources.acquire('foo');
+            assert(lock);
+
+            exchange.resources.release('orders');
+            exchange.resources.release('orders');
+
+            var lock = exchange.resources.acquire('orders', true /* exclusive */);
+            assert(lock);
+        });
     });
 
 
