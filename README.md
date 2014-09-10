@@ -99,6 +99,27 @@ info:    Bot started.
 ...
 ```
 
+## Running in production
+
+For best results, assume the bot will crash or shutdown at some point, then run it in reset-only mode and send yourself an alert. Once the situation has been investigated, restart the bot. It's not recommended to let it auto-restart on its own by using a process manager.
+
+A script like this might do the trick:
+
+```bash
+#!/bin/bash
+liquid --LIVE \
+  --stopAfter 1 \
+  --logfile log.json \
+  --minValue 70 \
+  --email "$EMAIL";
+
+# Bot went down, make sure we're in a safe state.
+liquid --LIVE \
+  --resetOnly;
+
+echo "Bot stopped. Take a look at it." | mail "$EMAIL"
+```
+
 
 ## Components
 
