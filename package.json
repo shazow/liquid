@@ -24,6 +24,6 @@
     "test": "mocha -R spec ./test"
   },
   "bin": {
-    "liquid" : "./liquid"
+    "liquid": "./liquid"
   }
 }
