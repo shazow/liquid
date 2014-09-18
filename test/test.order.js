@@ -447,6 +447,53 @@ describe('patchOrders', function() {
         assert.deepEqual(instructions.cancel, [
             new Order(null, 'BID', '2.0', '300')
         ]);
+
+        var instructions = patchOrders([
+            new Order(null, 'ASK', '2.0', '300'),
+            new Order(null, 'BID', '2.0', '305'),
+            new Order(null, 'BID', '3.0', '302')
+        ], [
+            new Order(null, 'ASK', '2.0', '250'),
+            new Order(null, 'BID', '3.0', '405'),
+            new Order(null, 'BID', '2.0', '425')
+        ], 0.05);
+
+        assert.deepEqual(instructions.place, [
+            new Order(null, 'ASK', '2.0', '250'),
+            new Order(null, 'BID', '2.0', '425'),
+            new Order(null, 'BID', '3.0', '405')
+        ]);
+
+        assert.deepEqual(instructions.cancel, [
+            new Order(null, 'ASK', '2.0', '300'),
+            new Order(null, 'BID', '2.0', '305'),
+            new Order(null, 'BID', '3.0', '302')
+        ]);
+
+
+        var instructions = patchOrders([
+            new Order(null, 'BID', '10', '300'),
+            new Order(null, 'ASK', '20', '300'),
+            new Order(null, 'ASK', '30', '300')
+        ], [
+            new Order(null, 'ASK', '2', '300'),
+            new Order(null, 'ASK', '3', '300'),
+            new Order(null, 'BID', '4', '300'),
+            new Order(null, 'ASK', '5', '300')
+        ], 0.05);
+
+        assert.deepEqual(instructions.place, [
+            new Order(null, 'ASK', '2', '300'),
+            new Order(null, 'ASK', '3', '300'),
+            new Order(null, 'BID', '4', '300'),
+            new Order(null, 'ASK', '5', '300')
+        ]);
+
+        assert.deepEqual(instructions.cancel, [
+            new Order(null, 'BID', '10', '300'),
+            new Order(null, 'ASK', '20', '300'),
+            new Order(null, 'ASK', '30', '300')
+        ]);
     });
 
     it('should tolerate changes within threshold', function() {
@@ -463,6 +510,34 @@ describe('patchOrders', function() {
             new Order(null, 'ASK', '2.0', '250')
         ]);
         assert.deepEqual(instructions.cancel, []);
+    });
+
+    it('should reconstruct the patch with no tolerating baseline', function() {
+        var instructions = patchOrders([], [
+            new Order(null, 'ASK', '2.0', '250'),
+            new Order(null, 'BID', '3.0', '305'),
+            new Order(null, 'BID', '2.0', '325')
+        ], 0.1);
+
+        assert.deepEqual(instructions.cancel, []);
+        assert.deepEqual(instructions.place, [
+            new Order(null, 'ASK', '2.0', '250'),
+            new Order(null, 'BID', '2.0', '325'),
+            new Order(null, 'BID', '3.0', '305')
+        ]);
+
+        var instructions = patchOrders([
+            new Order(null, 'ASK', '2.0', '250'),
+            new Order(null, 'BID', '3.0', '305'),
+            new Order(null, 'BID', '2.0', '325')
+        ], [], 0.1);
+
+        assert.deepEqual(instructions.cancel, [
+            new Order(null, 'ASK', '2.0', '250'),
+            new Order(null, 'BID', '2.0', '325'),
+            new Order(null, 'BID', '3.0', '305')
+        ]);
+        assert.deepEqual(instructions.place, []);
     });
 });
 
