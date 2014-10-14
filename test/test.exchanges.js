@@ -46,7 +46,8 @@ describe('Exchanges', function() {
                 new Order('bar', 'ASK', 1, 1),
                 new Order('baz', 'ASK', 1, 1)
             ];
-            exchange.replaceOrders(startOrders);
+            exchange.clearOrders();
+            exchange.placeOrders(startOrders);
             assert.deepEqual(exchange.getOrders(), startOrders);
 
             var newOrders = [
@@ -54,10 +55,11 @@ describe('Exchanges', function() {
                 new Order('etc', 'BID', 1, 1),
                 new Order('quux', 'ASK', 1, 1)
             ];
-            exchange.replaceOrders(newOrders);
+            exchange.clearOrders();
+            exchange.placeOrders(newOrders);
             assert.deepEqual(exchange.getOrders(), newOrders);
 
-            exchange.replaceOrders([]);
+            exchange.clearOrders();
             assert.deepEqual(exchange.getOrders(), []);
         });
 
