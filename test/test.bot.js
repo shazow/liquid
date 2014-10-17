@@ -12,7 +12,7 @@ var BitmeClientMock = require('./mocks/bitme.js');
 
 
 describe('Bot', function() {
-    logger.level = 'debug';
+    logger.level = 'error';
 
     it('should change state', function() {
         var exch1 = new DummyExchange('1');
@@ -160,7 +160,7 @@ describe('Bot', function() {
 
     describe('BitmeClientMock', function() {
         var bitmeClient = new BitmeClientMock();
-        var origin = new BitmeExchange(bitmeClient, false, true);
+        var origin = new BitmeExchange(bitmeClient, false, false);
         var remote = new DummyExchange('remote');
         var bot = new Bot(origin, remote, {premium: 2.0, stopAfter: 2});
 
@@ -209,13 +209,42 @@ describe('Bot', function() {
 
 
         it('should perform trades', function(done) {
-            assert.equal(origin.getOrders().length, 0)
+            assert.equal(remote.getOrders().length, 0);
+            assert.equal(origin.getOrders().length, 0);
 
-            var order = new Order(null, 'ASK', '1', '700');
-            remote.placeOrders([order]);
+            // Order added
+            remote.orderbook = [new Order(null, 'ASK', '1', '700')];
             remote.tick();
 
-            assert.equal(origin.getOrders().length, 1)
+            var orders = origin.getOrders();
+            assert.equal(orders.length, 1);
+            assert.equal(orders[0].quantity, 1);
+            assert.equal(orders[0].rate, 1400);
+
+            // Price changed
+            remote.orderbook = [new Order(null, 'ASK', '0.5', '700')];
+            remote.tick();
+
+            var orders = origin.getOrders();
+            assert.equal(orders.length, 1);
+            assert.equal(orders[0].quantity, 0.5);
+            assert.equal(orders[0].rate, 1400);
+
+            // Fake order executed by cancelling out of band
+            origin.client.orderCancel(orders[0].id);
+            assert.equal(origin.client._orders.length, 0);
+            assert.equal(origin.getOrders().length, 1);
+            origin.tick();
+
+            // Order should be reciprocated now.
+            assert.equal(origin.getOrders().length, 0);
+            assert.equal(remote.getOrders().length, 1);
+
+            var orders = remote.getOrders();
+            assert.equal(orders[0].quantity, 0.5);
+            assert.equal(orders[0].rate, 700);
+
+            remote.clearOrders();
             done();
         });
     });

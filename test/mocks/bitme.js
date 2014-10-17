@@ -23,29 +23,47 @@ var BitmeClientMock = module.exports = function() {
 };
 
 
+/**
+ * Inject a fixed callback value for one call.
+ */
+BitmeClientMock.prototype.inject = function(key, cb) {
+    var client = this;
+    var original = client[key];
+    client[key] = function() {
+        var args = [];
+        Array.prototype.push.apply(args, arguments);
+        cb.apply(null, args);
+
+        // Revert
+        client[key] = original;
+    };
+};
+
+
 BitmeClientMock.prototype.debug = function() {
     var args = [];
     Array.prototype.push.apply(args, arguments);
     args[0] = '[BitmeClientMock] ' + args[0];
     logger.debug.apply(null, args);
+    //console.log.apply(null, args);
 };
 
 
 BitmeClientMock.prototype.verifyCredentials = function(cb) {
     this.debug('verifyCredentials');
-    cb(null);
+    cb && cb(null);
 };
 
 
 BitmeClientMock.prototype.ordersOpen = function(cb) {
     this.debug('ordersOpen', this._orders.length);
-    cb(null, {'orders': this._orders});
+    cb && cb(null, {'orders': this._orders});
 };
 
 
 BitmeClientMock.prototype.accounts = function(cb) {
     this.debug('accounts', this._accounts.length);
-    cb(null, {'accounts': this._accounts});
+    cb && cb(null, {'accounts': this._accounts});
 };
 
 
@@ -63,7 +81,7 @@ BitmeClientMock.prototype.orderCreate = function(currencyPair, orderTypeCd, quan
     this._orders.push(order);
 
     this.debug('orderCreate', order.uuid);
-    cb(null, {'order': order});
+    cb && cb(null, {'order': order});
 };
 
 
@@ -75,11 +93,11 @@ BitmeClientMock.prototype.orderCancel = function(uuid, cb) {
         if (order["uuid"] != uuid) continue;
 
         this._orders.splice(i);
-        cb(null, {'order': order});
+        cb && cb(null, {'order': order});
         return;
     }
 
-    cb('Order not found', {});
+    cb && cb('Order not found', {});
 };
 
 
@@ -94,5 +112,5 @@ BitmeClientMock.prototype.orderGet = function(uuid, cb) {
         return;
     }
 
-    cb('Order not found', {});
+    cb && cb('Order not found', {});
 };
