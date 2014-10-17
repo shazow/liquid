@@ -6,6 +6,7 @@ var assert = require('assert'),
     SampleHistory = require('../lib/bot.js').SampleHistory,
     Order = require('../lib/order.js').Order,
     totalValue = require('../lib/order.js').totalValue,
+    jsonClone = require('../lib/util.js').jsonClone,
     logger = require('../lib/logger.js');
 
 var BitmeClientMock = require('./mocks/bitme.js');
@@ -244,7 +245,47 @@ describe('Bot', function() {
             assert.equal(orders[0].quantity, 0.5);
             assert.equal(orders[0].rate, 700);
 
+            // Cleanup
+            remote.orderbook = [];
             remote.clearOrders();
+            origin.tick();
+            remote.tick();
+
+            done();
+        });
+
+        it('should handle partially-executed cancels', function(done) {
+            assert.equal(remote.getOrders().length, 0);
+            assert.equal(origin.getOrders().length, 0);
+
+            origin.placeOrders([new Order(null, 'ASK', '1', '1400')]);
+            assert.equal(origin.client._orders.length, 1);
+            var order = origin.client._orders[0];
+
+            // Order we'll return instead.
+            var executedOrder = jsonClone(order);
+            executedOrder.quantity = '0.3';
+
+            origin.client.inject('orderCancel', function(uuid, cb) {
+                assert.equal(uuid, executedOrder.uuid);
+                this._orders = [];
+
+                // Cancel successful but cancelled 0.3 instead of 1.0
+                cb && cb(null, {'order': executedOrder});
+            });
+
+            // Update orderbook on DummyExchange
+            remote.tick();
+
+            // Remote should have a 0.7 order, since we noticed this was
+            // executed during cancel.
+            assert.equal(remote.getOrders().length, 1);
+            assert.equal(origin.getOrders().length, 0);
+
+            var orders = remote.getOrders();
+            assert.equal(orders[0].rate, 700); // 1400 / 2.0 profit
+            assert.equal(orders[0].quantity, 0.7); // 1.0 - 0.3
+
             done();
         });
     });

@@ -32,7 +32,7 @@ BitmeClientMock.prototype.inject = function(key, cb) {
     client[key] = function() {
         var args = [];
         Array.prototype.push.apply(args, arguments);
-        cb.apply(null, args);
+        cb.apply(client, args);
 
         // Revert
         client[key] = original;
