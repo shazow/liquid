@@ -1,15 +1,18 @@
 var assert = require('assert'),
     async = require('async'),
-    DummyExchange = require('../lib/exchanges/dummy.js').DummyExchange;
-    Bot = require('../lib/bot.js').Bot;
+    DummyExchange = require('../lib/exchanges/dummy.js').DummyExchange,
+    BitmeExchange = require('../lib/exchanges/bitme.js').BitmeExchange,
+    Bot = require('../lib/bot.js').Bot,
     SampleHistory = require('../lib/bot.js').SampleHistory,
     Order = require('../lib/order.js').Order,
     totalValue = require('../lib/order.js').totalValue,
     logger = require('../lib/logger.js');
 
+var BitmeClientMock = require('./mocks/bitme.js');
+
 
 describe('Bot', function() {
-    logger.level = 'error';
+    logger.level = 'debug';
 
     it('should change state', function() {
         var exch1 = new DummyExchange('1');
@@ -154,6 +157,69 @@ describe('Bot', function() {
 
         });
     });
+
+    describe('BitmeClientMock', function() {
+        var bitmeClient = new BitmeClientMock();
+        var origin = new BitmeExchange(bitmeClient, false, true);
+        var remote = new DummyExchange('remote');
+        var bot = new Bot(origin, remote, {premium: 2.0, stopAfter: 2});
+
+        it('should place and cancel orders', function(done) {
+            var orderId;
+
+            async.series([
+                function startNoOrders(callback) {
+                    bitmeClient.ordersOpen(function(err, response) {
+                        assert.equal(response.orders.length, 0);
+                        callback();
+                    });
+                },
+                function placeOrder(callback) {
+                    bitmeClient.orderCreate('BTCUSD', 'ASK', '123', '456', function(err, response) {
+                        assert.equal(response.order.quantity, '123');
+                        assert.equal(response.order.rate, '456');
+                        callback();
+                    });
+                },
+                function checkOrders(callback) {
+                    bitmeClient.ordersOpen(function(err, response) {
+                        assert.equal(response.orders.length, 1);
+                        orderId = response.orders[0].uuid
+                        callback();
+                    });
+                },
+                function cancelOrder(callback) {
+                    bitmeClient.orderCancel(orderId, function(err, response) {
+                        assert(!err);
+                        assert.equal(response.order.uuid, orderId);
+                        callback();
+                    });
+                },
+                function checkOrders(callback) {
+                    bitmeClient.ordersOpen(function(err, response) {
+                        assert.equal(response.orders.length, 0);
+                        callback();
+                    });
+                }], done);
+        });
+
+        it('should start with the bot', function(done) {
+            bot.start(done);
+        });
+
+
+        it('should perform trades', function(done) {
+            assert.equal(origin.getOrders().length, 0)
+
+            var order = new Order(null, 'ASK', '1', '700');
+            remote.placeOrders([order]);
+            remote.tick();
+
+            assert.equal(origin.getOrders().length, 1)
+            done();
+        });
+    });
+
 });
 
 
