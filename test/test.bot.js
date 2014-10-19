@@ -160,14 +160,20 @@ describe('Bot', function() {
     });
 
     describe('BitmeClientMock', function() {
-        var bitmeClient = new BitmeClientMock();
-        var origin = new BitmeExchange(bitmeClient, false, false);
-        var remote = new DummyExchange('remote');
-        var bot = new Bot(origin, remote, {premium: 2.0, stopAfter: 2});
+        function makeBot() {
+            var bitmeClient = new BitmeClientMock();
+            var origin = new BitmeExchange(bitmeClient, false, false);
+            var remote = new DummyExchange('remote');
+            var bot = new Bot(origin, remote, {premium: 2.0, stopAfter: 2});
+            bot.start();
+            return bot;
+        }
+
 
         it('should place and cancel orders', function(done) {
-            var orderId;
+            var bitmeClient = new BitmeClientMock();
 
+            var orderId;
             async.series([
                 function startNoOrders(callback) {
                     bitmeClient.ordersOpen(function(err, response) {
@@ -205,11 +211,23 @@ describe('Bot', function() {
         });
 
         it('should start with the bot', function(done) {
-            bot.start(done);
+            var bitmeClient = new BitmeClientMock();
+            var origin = new BitmeExchange(bitmeClient, false, false);
+            var remote = new DummyExchange('remote');
+            var bot = new Bot(origin, remote, {premium: 2.0, stopAfter: 2});
+
+            bot.start(function() {
+                assert.equal(bot.state, 'start');
+                bot.stop(done);
+            });
         });
 
 
         it('should perform trades', function(done) {
+            var bot = makeBot();
+            var origin = bot.originExchange;
+            var remote = bot.remoteExchange;
+
             assert.equal(remote.getOrders().length, 0);
             assert.equal(origin.getOrders().length, 0);
 
@@ -246,17 +264,18 @@ describe('Bot', function() {
             assert.equal(orders[0].rate, 700);
 
             // Cleanup
-            remote.orderbook = [];
             remote.clearOrders();
+            remote.orderbook = [];
             origin.tick();
             remote.tick();
 
             done();
         });
 
-        it('should handle partially-executed cancels', function(done) {
-            assert.equal(remote.getOrders().length, 0);
-            assert.equal(origin.getOrders().length, 0);
+        it('should notice partially-executed cancels', function(done) {
+            var bot = makeBot();
+            var origin = bot.originExchange;
+            var remote = bot.remoteExchange;
 
             origin.placeOrders([new Order(null, 'ASK', '1', '1400')]);
             assert.equal(origin.client._orders.length, 1);
@@ -264,7 +283,7 @@ describe('Bot', function() {
 
             // Order we'll return instead.
             var executedOrder = jsonClone(order);
-            executedOrder.quantity = '0.3';
+            executedOrder.executed = '0.7';
 
             origin.client.inject('orderCancel', function(uuid, cb) {
                 assert.equal(uuid, executedOrder.uuid);
@@ -284,7 +303,66 @@ describe('Bot', function() {
 
             var orders = remote.getOrders();
             assert.equal(orders[0].rate, 700); // 1400 / 2.0 profit
-            assert.equal(orders[0].quantity, 0.7); // 1.0 - 0.3
+            assert.equal(orders[0].quantity, 0.7); // Executed amount
+
+            // Cleanup
+            remote.clearOrders();
+            remote.orderbook = [];
+            origin.tick();
+            remote.tick();
+
+            done();
+        });
+
+        it('should handle failed cancels due to execution', function(done) {
+            var bot = makeBot();
+            var origin = bot.originExchange;
+            var remote = bot.remoteExchange;
+
+            origin.placeOrders([new Order(null, 'ASK', '1', '1400')]);
+            assert.equal(origin.client._orders.length, 1);
+            var order = origin.client._orders[0];
+
+            var called = {};
+            origin.client.inject('orderCancel', function(uuid, cb) {
+                assert.equal(uuid, order.uuid);
+
+                // Clear order but we'll pretend it failed.
+                this._orders = [];
+                called.orderCancel = true;
+                cb && cb('Order does not exist.', {});
+            });
+
+            // Order we'll return instead.
+            var closedOrder = jsonClone(order);
+            closedOrder.closed = (new Date()).toJSON();
+
+            origin.client.inject('orderGet', function(uuid, cb) {
+                called.orderGet = true;
+                cb(null, {'order': closedOrder});
+            });
+
+            // Update orderbook on DummyExchange
+            remote.tick();
+
+            assert(called.orderCancel);
+            assert(called.orderGet);
+
+            // Propagate changes back on BitmeExchangeMock
+            origin.tick();
+
+            assert.equal(origin.getOrders().length, 0);
+            assert.equal(remote.getOrders().length, 1);
+
+            var orders = remote.getOrders();
+            assert.equal(orders[0].rate, 700); // 1400 / 2.0 profit
+            assert.equal(orders[0].quantity, 1); // Executed amount
+
+            // Cleanup
+            remote.clearOrders();
+            remote.orderbook = [];
+            origin.tick();
+            remote.tick();
 
             done();
         });
