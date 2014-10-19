@@ -56,7 +56,6 @@ BitmeClientMock.prototype.debug = function() {
     Array.prototype.push.apply(args, arguments);
     args[0] = '[BitmeClientMock] ' + args[0];
     logger.debug.apply(null, args);
-    //console.log.apply(null, args);
 };
 
 
