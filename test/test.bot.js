@@ -164,7 +164,7 @@ describe('Bot', function() {
             var bitmeClient = new BitmeClientMock();
             var origin = new BitmeExchange(bitmeClient, false, false);
             var remote = new DummyExchange('remote');
-            var bot = new Bot(origin, remote, {premium: 2.0, stopAfter: 2});
+            var bot = new Bot(origin, remote, {premium: 2.0});
             bot.start();
             return bot;
         }
@@ -214,7 +214,7 @@ describe('Bot', function() {
             var bitmeClient = new BitmeClientMock();
             var origin = new BitmeExchange(bitmeClient, false, false);
             var remote = new DummyExchange('remote');
-            var bot = new Bot(origin, remote, {premium: 2.0, stopAfter: 2});
+            var bot = new Bot(origin, remote, {premium: 2.0});
 
             bot.start(function() {
                 assert.equal(bot.state, 'start');
@@ -349,7 +349,7 @@ describe('Bot', function() {
             done();
         });
 
-        it.skip('should handle instantly-executed placed orders', function(done) {
+        it('should handle instantly-executed placed orders', function(done) {
             var bot = makeBot();
             var origin = bot.originExchange;
             var remote = bot.remoteExchange;
@@ -412,14 +412,21 @@ describe('Bot', function() {
 
             // Refresh orderbook based on Bitme state, detect trades.
             origin.tick();
-            assert.equal(origin.getOrders().length, 1);
 
-            // Only one order left now, partly-executed one.
+            // Only one order left now, the partly-executed one.
             var orders = origin.getOrders();
-            assert.equal(orders[0].quantity.toFixed(), 0.5);
+            assert.equal(orders.length, 1);
+            assert.equal(orders[0].quantity, 0.5);
 
             // Should have two orders, one for the full execution and one for partial.
-            assert.equal(remote.getOrders().length, 2);
+            var orders = remote.getOrders();
+            assert.equal(orders.length, 2);
+            assert.equal(orders[0].type, 'ASK');
+            assert.equal(orders[0].quantity, 0.5);
+            assert.equal(orders[0].rate, 500);
+            assert.equal(orders[1].type, 'BID');
+            assert.equal(orders[1].quantity, 1);
+            assert.equal(orders[1].rate, 700);
 
             done();
         });
