@@ -25,8 +25,13 @@ var BitmeClientMock = module.exports = function() {
 
 /**
  * Inject a fixed callback value for one call.
+ *
+ * @param {string} key Function name to override.
+ * @param {function} cb Function to use instead.
+ * @param {number=} count Number of times to intercept before reverting.
+ * @param {boolean=} callOriginal If true, call original also (for watching).
  */
-BitmeClientMock.prototype.inject = function(key, cb) {
+BitmeClientMock.prototype.inject = function(key, cb, count, callOriginal) {
     var client = this;
     var original = client[key];
     client[key] = function() {
@@ -34,8 +39,14 @@ BitmeClientMock.prototype.inject = function(key, cb) {
         Array.prototype.push.apply(args, arguments);
         cb.apply(client, args);
 
-        // Revert
-        client[key] = original;
+        if (callOriginal) {
+            original.apply(client, args);
+        }
+
+        // Revert?
+        if (count === undefined || --count == 0) {
+            client[key] = original;
+        }
     };
 };
 
@@ -80,7 +91,7 @@ BitmeClientMock.prototype.orderCreate = function(currencyPair, orderTypeCd, quan
     };
     this._orders.push(order);
 
-    this.debug('orderCreate', order.uuid);
+    this.debug('orderCreate', order.uuid, orderTypeCd, quantity, '@', '$' + rate);
     cb && cb(null, {'order': order});
 };
 
@@ -92,7 +103,7 @@ BitmeClientMock.prototype.orderCancel = function(uuid, cb) {
         var order = this._orders[i];
         if (order["uuid"] != uuid) continue;
 
-        this._orders.splice(i);
+        this._orders.splice(i, 1);
         cb && cb(null, {'order': order});
         return;
     }

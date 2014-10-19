@@ -92,13 +92,26 @@ describe('diffOrders', function() {
         assert.equal(changed.length, 0);
     });
 
-    it('should yield quantity changs', function() {
+    it('should yield quantity changes', function() {
         var changedOrders = orders.map(Order.prototype.clone);
         changedOrders[0].quantity = changedOrders[0].quantity.minus(0.5);
 
         var changed = diffOrders(orders, changedOrders);
         assert.equal(changed.length, 1);
         assert.equal(changed[0].quantity, 0.5);
+    });
+
+    it('should notice quantity changes along with missing orders', function() {
+        var changedOrders = [
+            new Order('2', 'ASK', '0.3', '35.000')
+        ];
+
+        var changed = diffOrders(orders, changedOrders);
+        assert.equal(changed.length, 2);
+        assert.deepEqual(changed, [
+            new Order('1', 'BID', '0.5', '2.0'),
+            new Order(null, 'ASK', '0.7', '35.00')
+        ]);
     });
 
     it('should diff missingOnly', function() {
