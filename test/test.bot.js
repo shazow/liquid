@@ -1,11 +1,15 @@
 var assert = require('assert'),
     async = require('async'),
-    DummyExchange = require('../lib/exchanges/dummy.js').DummyExchange;
-    Bot = require('../lib/bot.js').Bot;
+    DummyExchange = require('../lib/exchanges/dummy.js').DummyExchange,
+    BitmeExchange = require('../lib/exchanges/bitme.js').BitmeExchange,
+    Bot = require('../lib/bot.js').Bot,
     SampleHistory = require('../lib/bot.js').SampleHistory,
     Order = require('../lib/order.js').Order,
     totalValue = require('../lib/order.js').totalValue,
+    jsonClone = require('../lib/util.js').jsonClone,
     logger = require('../lib/logger.js');
+
+var BitmeClientMock = require('./mocks/bitme.js');
 
 
 describe('Bot', function() {
@@ -154,6 +158,281 @@ describe('Bot', function() {
 
         });
     });
+
+    describe('BitmeClientMock', function() {
+        function makeBot() {
+            var bitmeClient = new BitmeClientMock();
+            var origin = new BitmeExchange(bitmeClient, false, false);
+            var remote = new DummyExchange('remote');
+            var bot = new Bot(origin, remote, {premium: 2.0});
+            bot.start();
+            return bot;
+        }
+
+
+        it('should place and cancel orders', function(done) {
+            var bitmeClient = new BitmeClientMock();
+
+            var orderId;
+            async.series([
+                function startNoOrders(callback) {
+                    bitmeClient.ordersOpen(function(err, response) {
+                        assert.equal(response.orders.length, 0);
+                        callback();
+                    });
+                },
+                function placeOrder(callback) {
+                    bitmeClient.orderCreate('BTCUSD', 'ASK', '123', '456', function(err, response) {
+                        assert.equal(response.order.quantity, '123');
+                        assert.equal(response.order.rate, '456');
+                        callback();
+                    });
+                },
+                function checkOrders(callback) {
+                    bitmeClient.ordersOpen(function(err, response) {
+                        assert.equal(response.orders.length, 1);
+                        orderId = response.orders[0].uuid
+                        callback();
+                    });
+                },
+                function cancelOrder(callback) {
+                    bitmeClient.orderCancel(orderId, function(err, response) {
+                        assert(!err);
+                        assert.equal(response.order.uuid, orderId);
+                        callback();
+                    });
+                },
+                function checkOrders(callback) {
+                    bitmeClient.ordersOpen(function(err, response) {
+                        assert.equal(response.orders.length, 0);
+                        callback();
+                    });
+                }], done);
+        });
+
+        it('should start with the bot', function(done) {
+            var bitmeClient = new BitmeClientMock();
+            var origin = new BitmeExchange(bitmeClient, false, false);
+            var remote = new DummyExchange('remote');
+            var bot = new Bot(origin, remote, {premium: 2.0});
+
+            bot.start(function() {
+                assert.equal(bot.state, 'start');
+                bot.stop(done);
+            });
+        });
+
+
+        it('should perform trades', function(done) {
+            var bot = makeBot();
+            var origin = bot.originExchange;
+            var remote = bot.remoteExchange;
+
+            assert.equal(remote.getOrders().length, 0);
+            assert.equal(origin.getOrders().length, 0);
+
+            // Order added
+            remote.orderbook = [new Order(null, 'ASK', '1', '700')];
+            remote.tick();
+
+            var orders = origin.getOrders();
+            assert.equal(orders.length, 1);
+            assert.equal(orders[0].quantity, 1);
+            assert.equal(orders[0].rate, 1400);
+
+            // Price changed
+            remote.orderbook = [new Order(null, 'ASK', '0.5', '700')];
+            remote.tick();
+
+            var orders = origin.getOrders();
+            assert.equal(orders.length, 1);
+            assert.equal(orders[0].quantity, 0.5);
+            assert.equal(orders[0].rate, 1400);
+
+            // Fake order executed by cancelling out of band
+            origin.client.orderCancel(orders[0].id);
+            assert.equal(origin.client._orders.length, 0);
+            assert.equal(origin.getOrders().length, 1);
+            origin.tick();
+
+            // Order should be reciprocated now.
+            assert.equal(origin.getOrders().length, 0);
+            assert.equal(remote.getOrders().length, 1);
+
+            var orders = remote.getOrders();
+            assert.equal(orders[0].quantity, 0.5);
+            assert.equal(orders[0].rate, 700);
+
+            done();
+        });
+
+        it('should notice partially-executed cancels', function(done) {
+            var bot = makeBot();
+            var origin = bot.originExchange;
+            var remote = bot.remoteExchange;
+
+            origin.placeOrders([new Order(null, 'ASK', '1', '1400')]);
+            assert.equal(origin.client._orders.length, 1);
+            var order = origin.client._orders[0];
+
+            // Order we'll return instead.
+            var executedOrder = jsonClone(order);
+            executedOrder.executed = '0.7';
+
+            origin.client.inject('orderCancel', function(uuid, cb) {
+                assert.equal(uuid, executedOrder.uuid);
+                this._orders = [];
+
+                // Cancel successful but cancelled 0.3 instead of 1.0
+                cb && cb(null, {'order': executedOrder});
+            });
+
+            // Update orderbook on DummyExchange
+            remote.tick();
+
+            // Remote should have a 0.7 order, since we noticed this was
+            // executed during cancel.
+            assert.equal(remote.getOrders().length, 1);
+            assert.equal(origin.getOrders().length, 0);
+
+            var orders = remote.getOrders();
+            assert.equal(orders[0].rate, 700); // 1400 / 2.0 profit
+            assert.equal(orders[0].quantity, 0.7); // Executed amount
+
+            done();
+        });
+
+        it('should handle failed cancels due to execution', function(done) {
+            var bot = makeBot();
+            var origin = bot.originExchange;
+            var remote = bot.remoteExchange;
+
+            origin.placeOrders([new Order(null, 'ASK', '1', '1400')]);
+            assert.equal(origin.client._orders.length, 1);
+            var order = origin.client._orders[0];
+
+            var called = {};
+            origin.client.inject('orderCancel', function(uuid, cb) {
+                assert.equal(uuid, order.uuid);
+
+                // Clear order but we'll pretend it failed.
+                this._orders = [];
+                called.orderCancel = true;
+                cb && cb('Order does not exist.', {});
+            });
+
+            // Order we'll return instead.
+            var closedOrder = jsonClone(order);
+            closedOrder.closed = (new Date()).toJSON();
+
+            origin.client.inject('orderGet', function(uuid, cb) {
+                called.orderGet = true;
+                cb(null, {'order': closedOrder});
+            });
+
+            // Update orderbook on DummyExchange
+            remote.tick();
+
+            assert(called.orderCancel);
+            assert(called.orderGet);
+
+            // Propagate changes back on BitmeExchangeMock
+            origin.tick();
+
+            assert.equal(origin.getOrders().length, 0);
+            assert.equal(remote.getOrders().length, 1);
+
+            var orders = remote.getOrders();
+            assert.equal(orders[0].rate, 700); // 1400 / 2.0 profit
+            assert.equal(orders[0].quantity, 1); // Executed amount
+
+            done();
+        });
+
+        it('should handle instantly-executed placed orders', function(done) {
+            var bot = makeBot();
+            var origin = bot.originExchange;
+            var remote = bot.remoteExchange;
+
+            // Start with two orders, one will be partially executed, one fully.
+            remote.orderbook = [
+                new Order(null, 'ASK', '1', '700'),
+                new Order(null, 'BID', '1', '500')
+            ];
+
+            var ordersCreated = 0;
+            origin.client.inject('orderCreate', function(currencyPair, orderTypeCd, quantity, rate, cb) {
+                ordersCreated++;
+                // Pass to the original with modified responses
+                //
+                // Note: None of this really matters, the bot should ignore
+                // execution state during orderCreate and defer changes to
+                // future tick updates.
+                //
+                // In BitClientMock, the returned object is a reference to the
+                // internally stored representation, so mutating it during the
+                // response does the trick for modifying the internal state
+                // also.
+                BitmeClientMock.prototype.orderCreate.call(origin.client, currencyPair, orderTypeCd, quantity, rate, function(err, response) {
+                    if (response.order.order_type_cd == 'ASK') {
+                        // Executed completely.
+                        response.order.executed = '1.0';
+                        response.order.closed = (new Date()).toJSON();
+
+                        // Remove from internal order state
+                        origin.client.orderCancel(response.order.uuid);
+                    } else {
+                        // Executed partially.
+                        response.order.executed = '0.5';
+                    }
+                    cb(err, response);
+                });
+            }, 2);
+
+            remote.tick();
+            assert.equal(ordersCreated, 2);
+            assert.equal(remote.orderbook.length, 2);
+
+            assert.equal(remote.getOrders().length, 0);
+            assert.equal(origin.getOrders().length, 2);
+
+            // Bot still thinks the orders are not executed.
+            var orders = origin.getOrders();
+            assert.equal(orders[0].quantity, 1);
+            assert.equal(orders[1].quantity, 1);
+
+            origin.client.ordersOpen(function(_, r) {
+                // Confirm BitmeClientMock state is correct
+                assert.equal(r.orders.length, 1);
+                assert.equal(r.orders[0].order_type_cd, 'BID');
+                assert.equal(r.orders[0].executed, 0.5);
+                assert.equal(r.orders[0].quantity, 1);
+                assert.equal(r.orders[0].rate, 250);
+            });
+
+            // Refresh orderbook based on Bitme state, detect trades.
+            origin.tick();
+
+            // Only one order left now, the partly-executed one.
+            var orders = origin.getOrders();
+            assert.equal(orders.length, 1);
+            assert.equal(orders[0].quantity, 0.5);
+
+            // Should have two orders, one for the full execution and one for partial.
+            var orders = remote.getOrders();
+            assert.equal(orders.length, 2);
+            assert.equal(orders[0].type, 'ASK');
+            assert.equal(orders[0].quantity, 0.5);
+            assert.equal(orders[0].rate, 500);
+            assert.equal(orders[1].type, 'BID');
+            assert.equal(orders[1].quantity, 1);
+            assert.equal(orders[1].rate, 700);
+
+            done();
+        });
+
+    });
+
 });
 
 

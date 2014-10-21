@@ -3,13 +3,8 @@ var assert = require('assert'),
     BitmeExchange = require('../lib/exchanges/bitme.js').BitmeExchange,
     BitstampExchange = require('../lib/exchanges/bitstamp.js').BitstampExchange,
     diffOrders = require('../lib/order.js').diffOrders,
+    jsonClone = require('../lib/util.js').jsonClone,
     Order = require('../lib/order.js').Order;
-
-
-// Simple helper for cloning objects.
-var jsonClone = function(o) {
-    return JSON.parse(JSON.stringify(o));
-};
 
 
 describe('Exchanges', function() {
