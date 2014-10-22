@@ -11,30 +11,8 @@ var assert = require('assert'),
 
 var BitmeClientMock = require('./mocks/bitme.js');
 
-
-describe('Bot', function() {
-    logger.level = 'error';
-
-    it('should change state', function() {
-        var exch1 = new DummyExchange('1');
-        var exch2 = new DummyExchange('2');
-
-        var bot = new Bot(exch1, exch2);
-        assert.equal(bot.state, 'idle');
-
-        bot.start(function(err) {
-            assert.equal(err, undefined);
-            assert.equal(bot.state, 'start');
-        })
-
-        bot.stop(function() {
-            assert.equal(bot.state, 'idle');
-        });
-    });
-
-    describe('Trade Scenarios', function() {
-        var origin = new DummyExchange('origin');
-        var remote = new DummyExchange('remote');
+function createTradeScenarios(origin, remote) {
+    return function() {
         var bot = new Bot(origin, remote, {premium: 2.0, stopAfter: 2});
 
         it('should instantiate the bot correctly', function(done) {
@@ -157,6 +135,28 @@ describe('Bot', function() {
             });
 
         });
+    };
+};
+
+
+describe('Bot', function() {
+    logger.level = 'error';
+
+    it('should change state', function() {
+        var exch1 = new DummyExchange('1');
+        var exch2 = new DummyExchange('2');
+
+        var bot = new Bot(exch1, exch2);
+        assert.equal(bot.state, 'idle');
+
+        bot.start(function(err) {
+            assert.equal(err, undefined);
+            assert.equal(bot.state, 'start');
+        })
+
+        bot.stop(function() {
+            assert.equal(bot.state, 'idle');
+        });
     });
 
     describe('BitmeClientMock', function() {
@@ -168,7 +168,6 @@ describe('Bot', function() {
             bot.start();
             return bot;
         }
-
 
         it('should place and cancel orders', function(done) {
             var bitmeClient = new BitmeClientMock();
@@ -433,6 +432,14 @@ describe('Bot', function() {
 
     });
 
+    var origin = new DummyExchange('origin');
+    var remote = new DummyExchange('remote');
+    describe('Trade Scenarios: Dummy vs Dummy', createTradeScenarios(origin, remote));
+
+    var bitmeClient = new BitmeClientMock();
+    var origin = new BitmeExchange(bitmeClient, false, false);
+    var remote = new DummyExchange('remote');
+    describe('Trade Scenarios: BitmeMock vs Dummy', createTradeScenarios(origin, remote));
 });
 
 
