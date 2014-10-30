@@ -67,10 +67,16 @@ describe('Order', function() {
         assert.equal(o.similarTo(o), 0);
         assert.equal(o.similarTo(new Order(null, 'ASK', '1.1234567890', '100.123456789')), 0);
         assert.equal(o.similarTo(new Order(null, 'ASK', '1.12345679', '100.123')), 0);
-        assert.equal(o.similarTo(new Order(null, 'ASK', '1.12345679', '100.1')), 0);
+        assert.equal(o.similarTo(new Order(null, 'ASK', '1.12345679', '100.12')), 0);
         assert.equal(o.similarTo(new Order(null, 'ASK', '1', '95')), 1);
         assert.equal(o.similarTo(new Order(null, 'ASK', '1', '105')), -1);
-        assert.equal(o.similarTo(new Order(null, 'BID', '1.12345679', '100.1')), 1);
+        assert.equal(o.similarTo(new Order(null, 'BID', '1.12345679', '100.12')), 1);
+
+        assert.equal((
+            new Order('42', 'BID', '28.75388705', '348.45')
+        ).similarTo(
+            new Order(null, 'BID', '28.7538870500', '348.454')
+        ), 0);
     });
 });
 
