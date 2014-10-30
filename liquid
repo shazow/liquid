@@ -119,4 +119,9 @@ if (program.catchExceptions) {
 
 
 // Start trading.
-bot.start();
+bot.start(function(err) {
+    if (!err) return;
+
+    logger.error('Bot failed to start.');
+    process.exit(1);
+});
