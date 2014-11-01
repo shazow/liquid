@@ -169,8 +169,6 @@ describe('Bot', function() {
         };
 
         it('should recover from start failures: credentials', function(done) {
-            logger.level = 'debug'; // XXX
-
             var bot = makeBot();
 
             bot.originExchange.client.inject('verifyCredentials', function(cb) {
