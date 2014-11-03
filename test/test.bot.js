@@ -30,7 +30,7 @@ function createTradeScenarios(origin, remote) {
 
             assert.equal(bot.state, 'idle');
             bot.start(function() {
-                assert.equal(bot.state, 'start');
+                assert.equal(bot.state, 'ready');
                 done();
             });
         });
@@ -116,7 +116,7 @@ function createTradeScenarios(origin, remote) {
         });
 
         it('should stop trading after stopAfter is reached', function(done) {
-            assert.equal(bot.state, 'start');
+            assert.equal(bot.state, 'ready');
 
             // Inject a fake order just to test the condition. It will go into
             // the negatives, but oh well.
@@ -151,7 +151,7 @@ describe('Bot', function() {
 
         bot.start(function(err) {
             assert.equal(err, undefined);
-            assert.equal(bot.state, 'start');
+            assert.equal(bot.state, 'ready');
         })
 
         bot.stop(function() {
@@ -165,9 +165,36 @@ describe('Bot', function() {
             var origin = new BitmeExchange(bitmeClient, false, false);
             var remote = new DummyExchange('remote');
             var bot = new Bot(origin, remote, {premium: 2.0});
-            bot.start();
             return bot;
-        }
+        };
+
+        it('should recover from start failures: credentials', function(done) {
+            var bot = makeBot();
+
+            bot.originExchange.client.inject('verifyCredentials', function(cb) {
+                cb('Failed verifyCredentials');
+            });
+
+            bot.start(function(err) {
+                assert(err);
+                assert.equal(bot.state, 'idle');
+                done();
+            });
+        });
+
+        it('should recover from start failures: account balance', function(done) {
+            var bot = makeBot();
+
+            bot.originExchange.client.inject('accounts', function(cb) {
+                cb('Failed accounts');
+            });
+
+            bot.start(function(err) {
+                assert(err);
+                assert.equal(bot.state, 'idle');
+                done();
+            });
+        });
 
         it('should place and cancel orders', function(done) {
             var bitmeClient = new BitmeClientMock();
@@ -210,13 +237,10 @@ describe('Bot', function() {
         });
 
         it('should start with the bot', function(done) {
-            var bitmeClient = new BitmeClientMock();
-            var origin = new BitmeExchange(bitmeClient, false, false);
-            var remote = new DummyExchange('remote');
-            var bot = new Bot(origin, remote, {premium: 2.0});
+            var bot = makeBot();
 
             bot.start(function() {
-                assert.equal(bot.state, 'start');
+                assert.equal(bot.state, 'ready');
                 bot.stop(done);
             });
         });
@@ -226,6 +250,8 @@ describe('Bot', function() {
             var bot = makeBot();
             var origin = bot.originExchange;
             var remote = bot.remoteExchange;
+
+            bot.start()
 
             assert.equal(remote.getOrders().length, 0);
             assert.equal(origin.getOrders().length, 0);
@@ -270,6 +296,8 @@ describe('Bot', function() {
             var origin = bot.originExchange;
             var remote = bot.remoteExchange;
 
+            bot.start()
+
             origin.placeOrders([new Order(null, 'ASK', '1', '1400')]);
             assert.equal(origin.client._orders.length, 1);
             var order = origin.client._orders[0];
@@ -305,6 +333,8 @@ describe('Bot', function() {
             var bot = makeBot();
             var origin = bot.originExchange;
             var remote = bot.remoteExchange;
+
+            bot.start()
 
             origin.placeOrders([new Order(null, 'ASK', '1', '1400')]);
             assert.equal(origin.client._orders.length, 1);
@@ -352,6 +382,8 @@ describe('Bot', function() {
             var bot = makeBot();
             var origin = bot.originExchange;
             var remote = bot.remoteExchange;
+
+            bot.start();
 
             // Start with two orders, one will be partially executed, one fully.
             remote.orderbook = [
