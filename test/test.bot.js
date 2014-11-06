@@ -11,6 +11,10 @@ var assert = require('assert'),
 
 var BitmeClientMock = require('./mocks/bitme.js');
 
+
+logger.level = false;
+
+
 function createTradeScenarios(origin, remote) {
     return function() {
         var bot = new Bot(origin, remote, {premium: 2.0, stopAfter: 2});
@@ -140,8 +144,6 @@ function createTradeScenarios(origin, remote) {
 
 
 describe('Bot', function() {
-    logger.level = 'error';
-
     it('should change state', function() {
         var exch1 = new DummyExchange('1');
         var exch2 = new DummyExchange('2');
@@ -157,6 +159,39 @@ describe('Bot', function() {
         bot.stop(function() {
             assert.equal(bot.state, 'idle');
         });
+    });
+
+    it('should alert on low balance', function() {
+        var exch1 = new DummyExchange('1');
+        var exch2 = new DummyExchange('2');
+        var bot = new Bot(exch1, exch2);
+
+        exch1.setBalance(0, 0); // Not enough balance
+
+        var testTransport = new logger.transports.Memory({level: 'alert'});
+        testTransport.name = 'testTransport';
+        logger.add(testTransport, null, true);
+
+        var orderbook = {
+            'bids': [
+                new Order(null, 'BID', '2', '500'),
+                new Order(null, 'BID', '1.5', '300')
+            ],
+            'asks': [
+                new Order(null, 'ASK', '10', '700')
+            ]
+        };
+
+        // Place an order pre-emptively
+        exch1.placeOrders(orderbook['bids']);
+        bot.handleRemoteOrderbook(orderbook);
+        assert.equal(testTransport.writeOutput.length, 0);
+
+        exch1.clearOrders();
+        bot.handleRemoteOrderbook(orderbook);
+        assert.equal(testTransport.writeOutput.length, 1);
+        assert(testTransport.writeOutput[0].match(/alert: \s*Balance too low to make any of 3 aggregated trades./));
+        logger.remove(testTransport);
     });
 
     describe('BitmeClientMock', function() {
@@ -476,8 +511,6 @@ describe('Bot', function() {
 
 
 describe('SampleHistory', function() {
-    logger.level = 'error';
-
     it('should compute rolling average subset', function() {
         var h = new SampleHistory(4, 0, 2);
         assert.equal(h.rollingNum, 2);
