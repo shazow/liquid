@@ -12,6 +12,7 @@
     "limiter": "^1.0.5",
     "pusher-client": "^0.2.2",
     "pusher-node-client": "0.0.8",
+    "slack-winston": "0.0.1",
     "winston": "^0.7.3",
     "winston-mail": "^0.2.7"
   },
