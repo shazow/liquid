@@ -120,6 +120,20 @@ liquid --LIVE \
 echo "Bot stopped. Take a look at it." | mail "$EMAIL"
 ```
 
+You can also add notifications to the Slack channel of your choice, you just
+need to [add a Incoming WebHooks API Integration](https://mirrorx.slack.com/services/new/incoming-webhook)
+for the channel of your choice and export the key into a `SLACK_SECRET`
+environment variable.
+
+```bash
+export SLACK_SECRET="XXX"
+
+liquid ... \
+  --slack "#trading";
+
+...
+```
+
 
 ## Components
 
