@@ -59,7 +59,7 @@ program
     .option('--stopAfter <count>', 'Stop after there have been this many pending trades on the remote exchange.', parseInt)
     .option('--progressInterval <ms>', 'INFO log bot progress at interval instead of per matched trade. (0 to disable)', parseInt)
     .option('--email [address]', 'Send alert-level logs to this email address.')
-    .option('--slack [channel]', 'Send info-level logs to this Slack channel. [#trading]')
+    .option('--slack [channel]', 'Send info-level logs to this Slack channel.')
     .option('--logfile <path>', 'Write debug-level JSON logs to this file.')
     .on('--help', extraHelp);
 
@@ -102,7 +102,7 @@ if (program.email) {
 
 
 // Install Slack transport for winston?
-if (program.env['SLACK_SECRET']) {
+if (program.slack && program.env['SLACK_SECRET']) {
     var SlackTransport = require('slack-winston').Slack;
     var slackOptions = {
         domain: 'mirrorx',
@@ -116,6 +116,8 @@ if (program.env['SLACK_SECRET']) {
 
     logger.add(SlackTransport, slackOptions);
     logger.debug('Configured Slack notifications:', program.slack);
+} else if (program.slack) {
+    logger.warn('Slack channel set, but no SLACK_SECRET environment variable. Skipping.')
 }
 
 
