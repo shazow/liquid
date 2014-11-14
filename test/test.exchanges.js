@@ -84,15 +84,25 @@ describe('Exchanges', function() {
             var lock = exchange.requestLock.acquire();
             assert(lock);
 
-            var lock = exchange.requestLock.acquire(true /* exclusive */);
+            var isCalled = false;
+            var lock = exchange.requestLock.acquire(true /* exclusive */, function() {
+                isCalled = true;
+            });
             assert(!lock);
             assert.equal(exchange.requestLock.using(), 2);
 
             exchange.requestLock.release();
+            assert(!isCalled);
             exchange.requestLock.release();
+            assert(isCalled);
+            assert.equal(exchange.requestLock.using(), 0);
 
-            var lock = exchange.requestLock.acquire(true /* exclusive */);
+            var isCalled2 = false;
+            var lock = exchange.requestLock.acquire(true /* exclusive */, function() {
+                isCalled2 = true;
+            });
             assert(lock);
+            assert(isCalled2)
         });
     });
 
