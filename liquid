@@ -143,8 +143,10 @@ if (program.catchExceptions) {
 
 // Start trading.
 bot.start(function(err) {
-    if (!err) return;
+    if (err) {
+        logger.error('Bot failed to start.');
+        return process.exit(1);
+    }
 
-    logger.error('Bot failed to start.');
-    process.exit(1);
+    logger.info('liquid v%s started successfully.', pkg.version);
 });
