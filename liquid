@@ -74,7 +74,7 @@ program.parse(process.argv);
 
 var exchanges = (program.args[0] || '').split(':', 2);
 if (exchanges.length !== 2) {
-    logger.error('Failed to start. Must specifiy origin and remote exchanges. Example: "dummy:dummy"');
+    console.log('Invalid usage: Must specifiy origin and remote exchanges. Example: "dummy:dummy"');
     process.exit(2);
 }
 
