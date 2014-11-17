@@ -78,24 +78,31 @@ describe('Exchanges', function() {
         it('should track resources', function() {
             var exchange = new DummyExchange();
 
-            var lock = exchange.resources.acquire('orders');
+            var lock = exchange.requestLock.acquire();
             assert(lock);
 
-            var lock = exchange.resources.acquire('orders');
+            var lock = exchange.requestLock.acquire();
             assert(lock);
 
-            var lock = exchange.resources.acquire('orders', true /* exclusive */);
+            var isCalled = false;
+            var lock = exchange.requestLock.acquire(true /* exclusive */, function() {
+                isCalled = true;
+            });
             assert(!lock);
-            assert.equal(exchange.resources.using('orders'), 2);
+            assert.equal(exchange.requestLock.using(), 2);
 
-            var lock = exchange.resources.acquire('foo');
+            exchange.requestLock.release();
+            assert(!isCalled);
+            exchange.requestLock.release();
+            assert(isCalled);
+            assert.equal(exchange.requestLock.using(), 0);
+
+            var isCalled2 = false;
+            var lock = exchange.requestLock.acquire(true /* exclusive */, function() {
+                isCalled2 = true;
+            });
             assert(lock);
-
-            exchange.resources.release('orders');
-            exchange.resources.release('orders');
-
-            var lock = exchange.resources.acquire('orders', true /* exclusive */);
-            assert(lock);
+            assert(isCalled2)
         });
     });
 
