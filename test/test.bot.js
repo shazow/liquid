@@ -39,7 +39,12 @@ function createTradeScenarios(origin, remote) {
             });
         });
 
-        it('should react to remote orderbook updates (from empty)', function(done) {
+        it('should react to remote orderbook updates (from empty)', function() {
+            bot.handleRemoteOrderbook([], function() {
+                var originOrders = origin.getOrders();
+                assert.equal(originOrders.length, 0);
+            });
+
             var orderbook = {
                 'bids': [new Order(null, 'BID', '2', '500')],
                 'asks': []
@@ -52,8 +57,6 @@ function createTradeScenarios(origin, remote) {
                 assert.equal(originOrders[0].type, 'BID');
                 assert.equal(originOrders[0].quantity.toFixed(), '2');
                 assert.equal(originOrders[0].rate.toFixed(), '250');
-
-                done();
             });
         });
 
