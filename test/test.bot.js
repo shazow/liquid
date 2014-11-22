@@ -197,6 +197,30 @@ describe('Bot', function() {
         logger.remove(testTransport);
     });
 
+
+    it('should apply premiums to trades', function() {
+        var origin = new DummyExchange('1');
+        var remote = new DummyExchange('2');
+        var bot = new Bot(origin, remote, {premium: 1.01, maxVolatility: 0.1});
+        bot.start()
+
+        bot.handleRemoteOrderbook([
+            new Order(null, 'ASK', '2', '1000.00')
+        ]);
+        assert.deepEqual(origin.getOrders(), [
+            new Order('1', 'ASK', '2', '1010.00')
+        ]);
+
+        var order = origin.getOrders()[0];
+        bot.handleOriginTrade(order);
+        assert.deepEqual(remote.getOrders(), [
+            // New order is at rate $909.91 rather than $900 because we piggyback
+            // on the premium inverting logic. Good enough?
+            new Order('1', 'BID', '2', order.rate.dividedBy(1.11))
+        ], remote.getOrders().map(String));
+
+    });
+
     describe('BitmeClientMock', function() {
         function makeBot() {
             var bitmeClient = new BitmeClientMock();
