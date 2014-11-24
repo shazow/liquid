@@ -201,7 +201,7 @@ describe('Bot', function() {
     it('should apply premiums to trades', function() {
         var origin = new DummyExchange('1');
         var remote = new DummyExchange('2');
-        var bot = new Bot(origin, remote, {premium: 1.01, maxVolatility: 0.1});
+        var bot = new Bot(origin, remote, {premium: 1.01, remoteOrderDiscount: 0.1});
         bot.start()
 
         bot.handleRemoteOrderbook([
@@ -214,11 +214,26 @@ describe('Bot', function() {
         var order = origin.getOrders()[0];
         bot.handleOriginTrade(order);
         assert.deepEqual(remote.getOrders(), [
-            // New order is at rate $909.91 rather than $900 because we piggyback
-            // on the premium inverting logic. Good enough?
-            new Order('1', 'BID', '2', order.rate.dividedBy(1.11))
-        ], remote.getOrders().map(String));
+            new Order('1', 'BID', '2', '1100.00') // 1000 * 1.1 BID discount (above market)
+        ]);
 
+        // Reset orderbook.
+        bot.handleRemoteOrderbook([]);
+
+        // Same test but in reverse order now (BID instead of ASK):
+        bot.handleRemoteOrderbook([
+            new Order(null, 'BID', '5', '1111.00')
+        ]);
+        assert.deepEqual(origin.getOrders(), [
+            new Order('2', 'BID', '5', '1100.00')
+        ]);
+
+        var order = origin.getOrders()[0];
+        bot.handleOriginTrade(order);
+        assert.deepEqual(remote.getOrders(), [
+            new Order('1', 'BID', '2', '1100.00'),
+            new Order('2', 'ASK', '5', '1010.00') // 1111.0 / 1.1 ASK discount (below market)
+        ]);
     });
 
     describe('BitmeClientMock', function() {
