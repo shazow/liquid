@@ -1,7 +1,7 @@
 {
   "name": "liquid",
   "description": "Bitcoin Exchange Arbitrage Bot",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "private": true,
   "dependencies": {
     "async": "^0.9.0",
