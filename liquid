@@ -54,6 +54,7 @@ program
     .option('--minValue <value>', 'Aggregate orders until their total value exceeds this.', parseFloat)
     .option('--maxOrders <value>', 'Maximum number of orders to maintain on the origin exchange.', parseInt)
     .option('--maxVolatility <change>', 'Abort if market prices exceed the delayed rolling average. (0.1 -> 10% relative change)', parseFloat)
+    .option('--remoteOrderDiscount <change>', 'Discount remote limit orders to emulate market orders. (default to maxVolatility)', parseFloat)
     .option('--resetOnly', 'Start and shutdown immediately after reset.')
     .option('--catchExceptions', 'Attempt to catch exceptions and shutdown gracefully (flaky).')
     .option('--stopAfter <count>', 'Stop after there have been this many pending trades on the remote exchange.', parseInt)
