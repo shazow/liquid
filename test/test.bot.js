@@ -39,7 +39,12 @@ function createTradeScenarios(origin, remote) {
             });
         });
 
-        it('should react to remote orderbook updates (from empty)', function(done) {
+        it('should react to remote orderbook updates (from empty)', function() {
+            bot.handleRemoteOrderbook([], function() {
+                var originOrders = origin.getOrders();
+                assert.equal(originOrders.length, 0);
+            });
+
             var orderbook = {
                 'bids': [new Order(null, 'BID', '2', '500')],
                 'asks': []
@@ -52,8 +57,6 @@ function createTradeScenarios(origin, remote) {
                 assert.equal(originOrders[0].type, 'BID');
                 assert.equal(originOrders[0].quantity.toFixed(), '2');
                 assert.equal(originOrders[0].rate.toFixed(), '250');
-
-                done();
             });
         });
 
@@ -192,6 +195,45 @@ describe('Bot', function() {
         assert.equal(testTransport.writeOutput.length, 1);
         assert(testTransport.writeOutput[0].match(/alert: \s*Balance too low to make any of 3 aggregated trades./));
         logger.remove(testTransport);
+    });
+
+
+    it('should apply premiums to trades', function() {
+        var origin = new DummyExchange('1');
+        var remote = new DummyExchange('2');
+        var bot = new Bot(origin, remote, {premium: 1.01, remoteOrderDiscount: 0.1});
+        bot.start()
+
+        bot.handleRemoteOrderbook([
+            new Order(null, 'ASK', '2', '1000.00')
+        ]);
+        assert.deepEqual(origin.getOrders(), [
+            new Order('1', 'ASK', '2', '1010.00')
+        ]);
+
+        var order = origin.getOrders()[0];
+        bot.handleOriginTrade(order);
+        assert.deepEqual(remote.getOrders(), [
+            new Order('1', 'BID', '2', '1100.00') // 1000 * 1.1 BID discount (above market)
+        ]);
+
+        // Reset orderbook.
+        bot.handleRemoteOrderbook([]);
+
+        // Same test but in reverse order now (BID instead of ASK):
+        bot.handleRemoteOrderbook([
+            new Order(null, 'BID', '5', '1111.00')
+        ]);
+        assert.deepEqual(origin.getOrders(), [
+            new Order('2', 'BID', '5', '1100.00')
+        ]);
+
+        var order = origin.getOrders()[0];
+        bot.handleOriginTrade(order);
+        assert.deepEqual(remote.getOrders(), [
+            new Order('1', 'BID', '2', '1100.00'),
+            new Order('2', 'ASK', '5', '1010.00') // 1111.0 / 1.1 ASK discount (below market)
+        ]);
     });
 
     describe('BitmeClientMock', function() {
