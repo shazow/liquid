@@ -77,6 +77,12 @@ describe('Order', function() {
         ).similarTo(
             new Order(null, 'BID', '28.7538870500', '348.454')
         ), 0);
+
+        assert.equal((
+            new Order('42', 'ASK', '92.0195286878640776699', '370.845')
+        ).similarTo(
+            new Order(null, 'ASK', '92.01952869', '370.85')
+        ), 0);
     });
 });
 
