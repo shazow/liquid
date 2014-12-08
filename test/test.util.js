@@ -60,4 +60,16 @@ describe('Util', function() {
             assert.deepEqual(r, {'foo': 123, 'bar': 345, 'baz': 456});
         });
     });
+
+    describe('pager', function() {
+        it('should page in chunks', function() {
+            var p = util.pager([1,2,3,4,5,6,7,8,9,10], 3);
+            assert.deepEqual(p, [[1,2,3], [4,5,6], [7,8,9], [10]]);
+        });
+
+        it('should handle empty arrays', function() {
+            var p = util.pager([], 3);
+            assert.deepEqual(p, []);
+        });
+    });
 });

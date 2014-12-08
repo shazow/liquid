@@ -34,7 +34,7 @@ Use the tool:
 ```
 $ ./liquid --help
 
-  Usage: liquid [options]
+  Usage: liquid [options] <origin:remote>
 
   Options:
 
@@ -56,7 +56,7 @@ Start in DummyExchange mode, aggregating orders to value of $500 at a premium of
 150%:
 
 ```
-$ ./liquid -v --minValue 500 --premium 1.5
+$ ./liquid dummy:dummy -v --minValue 500 --premium 1.5
 debug:   Set debug level: "debug"
 info:    Bot created in dummy mode. All trades will be fake using a DummyExchange.
 debug:   [bot] init values: origin=DummyOrigin, remote=DummyRemote, premium=undefined, resetOnly=undefined, minValue=undefined, maxOrders=undefined
@@ -80,7 +80,7 @@ $ export BITME_SECRET="XXX"
 Once the environment variables have been set:
 
 ```
-$ ./liquid -v --LIVE --pretend --minValue 500 --premium 1.5
+$ ./liquid bitme:bitstamp -v --pretend --minValue 500 --premium 1.5
 debug:   Set debug level: "debug"
 info:    Bot created in PRETEND mode. Orderbook will be watched but no real trades will be placed.
 debug:   [bot] init values: origin=bitme, remote=bitstamp, premium=1.5, resetOnly=undefined, minValue=500, maxOrders=undefined
@@ -107,14 +107,14 @@ A script like this might do the trick:
 
 ```bash
 #!/bin/bash
-liquid --LIVE \
+liquid bitme:bitstamp \
   --stopAfter 1 \
   --logfile log.json \
   --minValue 70 \
   --email "$EMAIL";
 
 # Bot went down, make sure we're in a safe state.
-liquid --LIVE \
+liquid bitme:bitstamp \
   --resetOnly;
 
 echo "Bot stopped. Take a look at it." | mail "$EMAIL"

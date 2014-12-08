@@ -12,6 +12,8 @@ program.apiKeys = {
     'BITSTAMP_CLIENT_ID': process.env.BITSTAMP_CLIENT_ID,
     'BITSTAMP_KEY': process.env.BITSTAMP_KEY,
     'BITSTAMP_SECRET': process.env.BITSTAMP_SECRET,
+    'BITFINEX_KEY': process.env.BITFINEX_KEY,
+    'BITFINEX_SECRET': process.env.BITFINEX_SECRET,
     'BITME_KEY': process.env.BITME_KEY,
     'BITME_SECRET': process.env.BITME_SECRET
 }
@@ -24,30 +26,35 @@ program.env = {
 };
 
 
-var printEnvKeys = function(d) {
+var printKeys = function(d) {
+    var bullets = ['✖', '✓'];
     for (var key in d) {
-        var bullet = d[key] ? '✓' : '✖';
-        console.log('    ' + bullet + ' ' + key);
+        var b = (~~!!d[key]) % bullets.length;
+        console.log('    ' + bullets[b] + ' ' + key);
     }
 };
 
 
 var extraHelp = function() {
+    console.log('  Available exchanges (use for origin and remote arguments):\n');
+    console.log('    ' + (Bot.exchanges.map(function(o) { return o.id; }).join(', ')));
+    console.log('');
+
     // Print API key instructions
     console.log('  API keys loaded from environment variables:\n');
-    printEnvKeys(program.apiKeys);
+    printKeys(program.apiKeys);
     console.log('');
 
     console.log('  Additional environment variables:\n');
-    printEnvKeys(program.env);
+    printKeys(program.env);
     console.log('');
 };
 
 
 program
     .version(pkg.version)
+    .usage('[options] <origin:remote>')
     .option('-v, --verbosity [level]', 'Set logging level verbosity (warn, info, debug). [info]')
-    .option('--LIVE', 'Use real APIs, instead of DummyExchanges.')
     .option('--pretend', '(When live) Don\'t send trades, only print them.')
     .option('--premium <multiplier>', 'Multiplier to apply over remote exchange prices. (1.1 -> 10% premium, 0.9 -> 10% discount)', parseFloat)
     .option('--tolerance <change>', 'Tolerance of relative change of order value. (0.1 -> 10% relative change)', parseFloat)
@@ -65,6 +72,15 @@ program
     .on('--help', extraHelp);
 
 program.parse(process.argv);
+
+var exchanges = (program.args[0] || '').split(':', 2);
+if (exchanges.length !== 2) {
+    console.log('Invalid usage: Must specifiy origin and remote exchanges. Example: "dummy:dummy"');
+    process.exit(2);
+}
+
+program.originId = exchanges[0];
+program.remoteId = exchanges[1];
 
 
 // Determine logger verbosity.
