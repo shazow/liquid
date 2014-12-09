@@ -2,6 +2,7 @@ var assert = require('assert'),
     DummyExchange = require('../lib/exchanges/dummy.js').DummyExchange,
     BitmeExchange = require('../lib/exchanges/bitme.js').BitmeExchange,
     BitstampExchange = require('../lib/exchanges/bitstamp.js').BitstampExchange,
+    BitfinexExchange = require('../lib/exchanges/bitfinex.js').BitfinexExchange,
     diffOrders = require('../lib/order.js').diffOrders,
     jsonClone = require('../lib/util.js').jsonClone,
     Order = require('../lib/order.js').Order;
@@ -311,6 +312,31 @@ describe('Exchanges', function() {
             var r = {"error": "Just a simple error"};
             var err = BitstampExchange.toError(r);
             assert.equal(err.message, 'Just a simple error');
+        });
+    });
+
+
+    describe('BitfinexExchange', function() {
+        var sampleBalance = [
+            {
+                type: 'deposit',
+                currency: 'usd',
+                amount: '19970.0',
+                available: '19970.0'
+            },
+            {
+                type: 'exchange',
+                currency: 'btc',
+                amount: '1.0',
+                available: '1.0'
+            }
+        ]
+
+        it('should convert balances', function() {
+            var balance = BitfinexExchange.toBalance(sampleBalance);
+
+            assert.equal(balance.value, sampleBalance[0].available);
+            assert.equal(balance.quantity, sampleBalance[1].available);
         });
     });
 });
