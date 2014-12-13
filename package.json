@@ -26,7 +26,6 @@
   "bin": {
     "liquid": "./liquid"
   },
-  "main": "index.js",
   "directories": {
     "doc": "docs",
     "test": "test"
