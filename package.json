@@ -25,5 +25,19 @@
   },
   "bin": {
     "liquid": "./liquid"
-  }
+  },
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mirrorx/liquid.git"
+  },
+  "author": "Andrey Petrov <andrey@mirrorx.com>",
+  "bugs": {
+    "url": "https://github.com/mirrorx/liquid/issues"
+  },
+  "homepage": "https://github.com/mirrorx/liquid"
 }

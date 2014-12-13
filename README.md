@@ -1,4 +1,4 @@
-# ![liquid logo](https://dl.dropboxusercontent.com/u/35890370/liquid.png) liquid [![Build Status](https://magnum.travis-ci.com/vaurum/liquid.svg?token=bVhxrfzh3LxMJcPgjyx6&branch=master)](https://magnum.travis-ci.com/vaurum/liquid)
+# ![liquid logo](https://dl.dropboxusercontent.com/u/35890370/liquid.png) liquid [![Build Status](https://magnum.travis-ci.com/mirrorx/core.svg?token=bVhxrfzh3LxMJcPgjyx6&branch=develop)](https://magnum.travis-ci.com/mirrorx/core)
 
 Simple arbitrage bot to provide liquidity to Bitme customers from a remote
 exchange. The bot will synchronize the Bitme order book with a subset of remote
