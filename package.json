@@ -1,7 +1,7 @@
 {
   "name": "liquid",
   "description": "Bitcoin Exchange Arbitrage Bot",
-  "version": "2.0.3",
+  "version": "2.1.0",
   "private": true,
   "dependencies": {
     "async": "^0.9.0",
@@ -25,5 +25,18 @@
   },
   "bin": {
     "liquid": "./liquid"
-  }
+  },
+  "directories": {
+    "doc": "docs",
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mirrorx/liquid.git"
+  },
+  "author": "Andrey Petrov <andrey@mirrorx.com>",
+  "bugs": {
+    "url": "https://github.com/mirrorx/liquid/issues"
+  },
+  "homepage": "https://github.com/mirrorx/liquid"
 }

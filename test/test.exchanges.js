@@ -257,6 +257,37 @@ describe('Exchanges', function() {
             assert.equal(o.rate, 200);
         });
 
+        it('should convert transactions', function() {
+            var o = BitstampExchange.toOrder({
+                usd: '151.31',
+                btc: '-0.39610000',
+                btc_usd: '382.00',
+                order_id: 47789715,
+                fee: '0.16',
+                type: 2,
+                id: 6763682,
+                datetime: '2014-11-24 17:56:44'
+            });
+
+            assert.equal(o.id, '47789715');
+            assert.equal(o.exchange, 'bitstamp');
+            assert.equal(o.type, 'ASK');
+            assert.equal(o.quantity, '0.3961');
+            assert.equal(o.rate, 382);
+
+            var o = BitstampExchange.toOrder({
+                btc: '0.42',
+                btc_usd: '400.00',
+                order_id: 47789715,
+            });
+
+            assert.equal(o.id, '47789715');
+            assert.equal(o.exchange, 'bitstamp');
+            assert.equal(o.type, 'BID');
+            assert.equal(o.quantity, '0.42');
+            assert.equal(o.rate, 400);
+        });
+
         it('should convert orderbooks', function() {
             var orderbook = BitstampExchange.toOrderbook(sampleOrderbook);
             assert.equal(orderbook.bids.length, 20);
