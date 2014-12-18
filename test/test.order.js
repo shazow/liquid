@@ -84,6 +84,16 @@ describe('Order', function() {
             new Order(null, 'ASK', '92.01952869', '370.85')
         ), 0);
     });
+
+    it('should combine orders', function() {
+        var a = new Order(null, 'ASK', '1', '100');
+        var b = new Order(null, 'ASK', '3', '200');
+        var c = a.combine(b);
+
+        assert.equal(c.quantity, 4);
+        assert.equal(c.rate, 175);
+        assert.equal(c.type, 'ASK');
+    });
 });
 
 
