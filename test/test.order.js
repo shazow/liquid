@@ -94,6 +94,13 @@ describe('Order', function() {
         assert.equal(c.rate, 175);
         assert.equal(c.type, 'ASK');
     });
+
+    it('should invert negative quantity types', function() {
+        var order = new Order(null, 'ASK', '-0.123', '456');
+        assert.equal(order.quantity, 0.123);
+        assert.equal(order.rate, 456);
+        assert.equal(order.type, 'BID');
+    });
 });
 
 
