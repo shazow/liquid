@@ -2,6 +2,7 @@ var assert = require('assert'),
     DummyExchange = require('../lib/exchanges/dummy.js').DummyExchange,
     BitmeExchange = require('../lib/exchanges/bitme.js').BitmeExchange,
     BitstampExchange = require('../lib/exchanges/bitstamp.js').BitstampExchange,
+    BitfinexExchange = require('../lib/exchanges/bitfinex.js').BitfinexExchange,
     diffOrders = require('../lib/order.js').diffOrders,
     jsonClone = require('../lib/util.js').jsonClone,
     Order = require('../lib/order.js').Order;
@@ -312,5 +313,61 @@ describe('Exchanges', function() {
             var err = BitstampExchange.toError(r);
             assert.equal(err.message, 'Just a simple error');
         });
+    });
+
+
+    describe('BitfinexExchange', function() {
+        var sampleBalance = [
+            {
+                type: 'deposit',
+                currency: 'usd',
+                amount: '1000',
+                available: '900'
+            },
+            {
+                type: 'exchange',
+                currency: 'btc',
+                amount: '1.0',
+                available: '1.0'
+            },
+            {
+                type: 'exchange',
+                currency: 'usd',
+                amount: '50',
+                available: '10'
+            }
+        ];
+
+        it('should convert balances', function() {
+            var balance = BitfinexExchange.toBalance(sampleBalance);
+
+            assert.equal(balance.value, 10);
+            assert.equal(balance.quantity, 1.0);
+        });
+
+        var sampleOrders = [
+            // As returned by /order/new
+            {"active":2,"amount":"-0.01","avg_price":"0.0","created_at":"2015-01-05T20:37:25-05:00","fiat_currency":"USD","hidden":false,"id":163628459,"lockedperiod":null,"maxrate":"0.0","nopayback":null,"notify":0,"originalamount":"-0.01","pair":"BTCUSD","placed_id":null,"placed_trades":null,"price":"100.0","routing":"","status":"ACTIVE","trailingprice":"0.0","type":"EXCHANGE LIMIT","updated_at":"2015-01-05T20:37:25-05:00","user_id":34062,"vir":0},
+            // As returned by /order
+            {"id":163654166,"symbol":"btcusd","exchange":null,"price":"100.0","avg_execution_price":"0.0","side":"buy","type":"exchange limit","timestamp":"1420511333.0","is_live":true,"is_cancelled":false,"was_forced":false,"original_amount":"0.01","remaining_amount":"0.01","executed_amount":"0.0"}
+        ];
+
+
+        it('should convert orders', function() {
+            var o = BitfinexExchange.toOrder(sampleOrders[0]);
+            assert.equal(o.id, '163628459');
+            assert.equal(o.exchange, 'bitfinex');
+            assert.equal(o.type, 'BID');
+            assert.equal(o.quantity, 0.01);
+            assert.equal(o.rate, 100);
+
+            var o = BitfinexExchange.toOrder(sampleOrders[1]);
+            assert.equal(o.id, '163654166');
+            assert.equal(o.exchange, 'bitfinex');
+            assert.equal(o.type, 'BID');
+            assert.equal(o.quantity, 0.01);
+            assert.equal(o.rate, 100);
+        });
+
     });
 });
