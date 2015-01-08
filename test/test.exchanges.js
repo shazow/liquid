@@ -341,7 +341,7 @@ describe('Exchanges', function() {
         it('should convert balances', function() {
             var balance = BitfinexExchange.toBalance(sampleBalance);
 
-            assert.equal(balance.value, 910);
+            assert.equal(balance.value, 10);
             assert.equal(balance.quantity, 1.0);
         });
 
