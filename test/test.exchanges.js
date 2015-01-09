@@ -345,6 +345,16 @@ describe('Exchanges', function() {
             assert.equal(balance.quantity, 1.0);
         });
 
+        it('should explode on negative balances', function() {
+            assert.throws(function() {
+                BitfinexExchange.toBalance([{
+                    type: 'exchange',
+                    currency: 'btc',
+                    available: '-1.0'
+                }]);
+            });
+        });
+
         var sampleOrders = [
             // As returned by /order/new
             {"active":2,"amount":"-0.01","avg_price":"0.0","created_at":"2015-01-05T20:37:25-05:00","fiat_currency":"USD","hidden":false,"id":163628459,"lockedperiod":null,"maxrate":"0.0","nopayback":null,"notify":0,"originalamount":"-0.01","pair":"BTCUSD","placed_id":null,"placed_trades":null,"price":"100.0","routing":"","status":"ACTIVE","trailingprice":"0.0","type":"EXCHANGE LIMIT","updated_at":"2015-01-05T20:37:25-05:00","user_id":34062,"vir":0},
