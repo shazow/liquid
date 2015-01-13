@@ -120,13 +120,19 @@ if (program.email) {
 
 // Install Slack transport for winston?
 if (program.slack && program.env['SLACK_SECRET']) {
+    var emoji = {
+        'bitfinex': ':bitfinex:',
+        'bitstamp': ':bitstamp:',
+        'dummy': ':poop:'
+    }[program.remoteId] || ':droplet:';
+
     var SlackTransport = require('slack-winston').Slack;
     var slackOptions = {
         domain: 'mirrorx',
         token: program.env['SLACK_SECRET'],
         channel: program.slack,
-        username: 'LiquidBot',
-        icon_emoji: ':droplet:',
+        username: 'LiquidBot-' + program.remoteId,
+        icon_emoji: emoji,
         level: 'info',
         message: '[{{level}}] {{message}}<% if (meta) { %>\n```{{meta}}```\n<% } %>'
     };
