@@ -9,6 +9,7 @@
     "bitme": "^0.0.11",
     "bitstamp-request": "^0.1.2",
     "commander": "^2.3.0",
+    "heapdump": "^0.3.4",
     "limiter": "^1.0.5",
     "pusher-client": "^0.2.2",
     "pusher-node-client": "0.0.8",

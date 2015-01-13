@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+var heapdump = require('heapdump'); // Used to detect memory leaks, can remove later.
 var program = require('commander');
 
 var logger = require('./lib/logger.js'),
