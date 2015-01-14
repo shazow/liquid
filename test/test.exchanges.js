@@ -1,8 +1,8 @@
 var assert = require('assert'),
-    DummyExchange = require('../lib/exchanges/dummy.js').DummyExchange,
-    BitmeExchange = require('../lib/exchanges/bitme.js').BitmeExchange,
-    BitstampExchange = require('../lib/exchanges/bitstamp.js').BitstampExchange,
-    BitfinexExchange = require('../lib/exchanges/bitfinex.js').BitfinexExchange,
+    DummyExchange = require('../lib/exchanges/dummy.js'),
+    BitmeExchange = require('../lib/exchanges/bitme.js'),
+    BitstampExchange = require('../lib/exchanges/bitstamp.js'),
+    BitfinexExchange = require('../lib/exchanges/bitfinex.js'),
     diffOrders = require('../lib/order.js').diffOrders,
     jsonClone = require('../lib/util.js').jsonClone,
     Order = require('../lib/order.js').Order;

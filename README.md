@@ -190,7 +190,7 @@ event emitter which emits `trade` (our placed order is executed) and `orderbook`
 (exchange orderbook has been updated) events.
 
 ```javascript
-var DummyExchange = require('./lib/exchanges/dummy.js').DummyExchange;
+var DummyExchange = require('./lib/exchanges/dummy.js');
 
 var exchange = new DummyExchange('FakeExchange');
 ```
@@ -224,7 +224,7 @@ means unsubscribing from any websockets and clearing any interval timers. It may
 also attempt to push through any pending orders before shutting down.
 
 ```javascript
-var BitmeExchange = require('./lib/exchanges/bitme.js').BitmeExchange;
+var BitmeExchange = require('./lib/exchanges/bitme.js');
 
 var exchange = BitmeExchange.fromConfig({
     apiKeys: {
