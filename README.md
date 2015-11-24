@@ -1,10 +1,31 @@
-# ![liquid logo](https://dl.dropboxusercontent.com/u/35890370/liquid.png) liquid [![Build Status](https://magnum.travis-ci.com/mirrorx/liquid.svg?token=bVhxrfzh3LxMJcPgjyx6&branch=develop)](https://magnum.travis-ci.com/mirrorx/liquid)
+# liquid
 
-Simple arbitrage bot to provide liquidity to Bitme customers from a remote
-exchange. The bot will synchronize the Bitme order book with a subset of remote
-exchange orders, with an added premium. The bot will poll the Bitme order book
-to track completed orders. Once a Bitme completed order is noticed, then it will
-place a corresponding (sans-premium) order on the remote exchange.
+Arbitrage bot to provide liquidity across two exchanges.
+
+The bot will synchronize the Bitme order book with a subset of remote exchange
+orders, with an added premium. The bot will poll the Bitme order book to track
+completed orders. Once a Bitme completed order is noticed, then it will place a
+corresponding (sans-premium) order on the remote exchange.
+
+
+## Status
+
+**ARCHIVED**: This project is deprecated. The code is published for posterity.
+
+Strongly advised against using this bot as a whole, but there are stand-alone
+well-tested components that can be re-used in other applications.
+
+* Bitme (the Bitcoin exchange used as a destination in arbitrage) no longer
+    exists, so the bot won't work even if you try to run it.
+* Valuable stand-alone components that can be re-used:
+  * [lib/order.js](https://github.com/shazow/liquid/blob/master/lib/order.js):
+    Order operations abstraction, including calculating spread, producing
+    order set diffs and patches, fitting to budget constraints.
+
+
+---
+
+*Original README:*
 
 
 ## Warning
@@ -287,3 +308,13 @@ get the budget to be used with `aggregateOrders`.
 
 All of these pieces are generally well-tested, so don't forget to check the
 tests for examples on how they can be used independently or together.
+
+
+## Sponsors
+
+This project was sponsored by [Mirror](https://mirror.co/).
+
+
+## License
+
+MIT.

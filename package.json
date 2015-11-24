@@ -32,11 +32,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/mirrorx/liquid.git"
+    "url": "https://github.com/shazow/liquid.git"
   },
-  "author": "Andrey Petrov <andrey@mirrorx.com>",
+  "author": "andrey.petrov@shazow.net",
   "bugs": {
-    "url": "https://github.com/mirrorx/liquid/issues"
+    "url": "https://github.com/shazow/liquid/issues"
   },
-  "homepage": "https://github.com/mirrorx/liquid"
+  "homepage": "https://github.com/shazow/liquid"
 }
